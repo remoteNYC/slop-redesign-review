@@ -1,4 +1,4 @@
 [mcp_servers.godot]
 command = "npx"
-args = ["@coding-solo/godot-mcp"]
-env_vars = ["GODOT_PATH=/usr/bin/godot", "DEBUG=true"]
+args = ["-y", "@coding-solo/godot-mcp"]
+env = { GODOT_PATH = "/Users/yangruimeng/Downloads/Godot.app/Contents/MacOS/Godot" }

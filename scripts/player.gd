@@ -23,6 +23,7 @@ var invulnerable_time := 0.0
 var attack_time := 0.0
 var coyote_time := 0.0
 var jump_buffer_time := 0.0
+var jump_cut_available := false
 var hurt_lock := 0.0
 var facing := 1
 var run_clock := 0.0
@@ -53,6 +54,7 @@ func _physics_process(delta: float) -> void:
 	if is_on_floor():
 		coyote_time = COYOTE_TIME
 		attack_time = 0.0
+		jump_cut_available = false
 	else:
 		coyote_time = maxf(0.0, coyote_time - delta)
 	if Input.is_action_just_pressed("jump"):
@@ -66,13 +68,17 @@ func _physics_process(delta: float) -> void:
 			velocity.x = move_toward(velocity.x, 0.0, (GROUND_FRICTION if is_on_floor() else AIR_FRICTION) * delta)
 	if jump_buffer_time > 0.0 and coyote_time > 0.0 and attack_time <= 0.0:
 		velocity.y = JUMP_SPEED
+		jump_cut_available = true
 		jump_buffer_time = 0.0
 		coyote_time = 0.0
 		jumped.emit(global_position)
-	if Input.is_action_just_released("jump") and velocity.y < -80.0 and attack_time <= 0.0:
-		velocity.y *= 0.55
+	if Input.is_action_just_released("jump"):
+		if jump_cut_available and velocity.y < -80.0 and attack_time <= 0.0:
+			velocity.y *= 0.55
+		jump_cut_available = false
 	if Input.is_action_just_pressed("attack") and not is_on_floor() and attack_time <= 0.0 and hurt_lock <= 0.0:
 		attack_time = ATTACK_DURATION
+		jump_cut_available = false
 		velocity.y = maxf(velocity.y, 170.0)
 	velocity.y = minf(velocity.y + GRAVITY * delta, 390.0)
 	move_and_slide()
@@ -94,6 +100,7 @@ func _check_strike() -> void:
 		if target.has_method("receive_strike") and target.receive_strike():
 			attack_time = 0.0
 			velocity.y = REBOUND_SPEED
+			jump_cut_available = false
 			coyote_time = 0.0
 			rebounded.emit(global_position + Vector2(0.0, 10.0))
 			return
@@ -104,6 +111,7 @@ func take_damage(source: Vector2) -> void:
 	health -= 1
 	health_changed.emit(health)
 	attack_time = 0.0
+	jump_cut_available = false
 	if health <= 0:
 		kill()
 		return
@@ -117,6 +125,7 @@ func kill() -> void:
 		return
 	active = false
 	velocity = Vector2.ZERO
+	jump_cut_available = false
 	died.emit()
 
 func reset_at(at: Vector2) -> void:
@@ -128,6 +137,7 @@ func reset_at(at: Vector2) -> void:
 	attack_time = 0.0
 	coyote_time = 0.0
 	jump_buffer_time = 0.0
+	jump_cut_available = false
 	hurt_lock = 0.0
 	health_changed.emit(health)
 	queue_redraw()

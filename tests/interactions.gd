@@ -54,22 +54,33 @@ func _run() -> void:
 			_check(absf(delta_player - delta_platform) < 7.0, "platform carries player (player %.1f, platform %.1f)" % [delta_player, delta_platform])
 		else:
 			failures.append("platform was rebuilt after player fell")
-	var crusher: Area2D
+	var crusher: AnimatableBody2D
 	for child in game.level.get_children():
-		if child is Area2D and child.has_signal("crushed_player"):
+		if child is AnimatableBody2D and child.has_signal("crushed_player"):
 			crusher = child
 			break
 	_check(crusher != null, "crusher exists")
 	if crusher != null:
+		crusher.clock = 0.85
+		await create_timer(0.03).timeout
+		game.player.reset_at(crusher.global_position + Vector2(0, -48))
+		await create_timer(0.3).timeout
+		_check(game.mode == "play" and game.player.health == 3 and game.player.is_on_floor(), "player can land safely on the crusher top")
+		_check(absf(game.player.global_position.y - (crusher.global_position.y - 31.0)) < 3.0, "crusher top supports the player (player %s, crusher %s)" % [game.player.global_position, crusher.global_position])
+		await create_timer(0.42).timeout
+		_check(game.mode == "play" and game.player.is_on_floor() and absf(game.player.global_position.y - (crusher.global_position.y - 31.0)) < 3.0, "rising crusher carries player on top")
+		game.player.reset_at(crusher.global_position + Vector2(18, -2))
+		await create_timer(0.08).timeout
+		_check(game.mode == "play" and game.player.health == 3, "unspiked crusher side is safe")
 		game.player.reset_at(Vector2(958, 396))
 		crusher.clock = 0.7
 		await create_timer(0.14).timeout
-		_check(game.mode == "dead", "timed crusher is lethal when it drops")
+		_check(game.mode == "dead", "crusher spikes are lethal when it drops")
 		await create_timer(0.52).timeout
 	paused = false
 	game.free()
 	if failures.is_empty():
-		print("INTERACTIONS PASS: enemy damage, defeat, spikes, respawn, moving platform, crusher")
+		print("INTERACTIONS PASS: enemy damage, defeat, spikes, respawn, moving platform, crusher top and spikes")
 		quit(0)
 	else:
 		for failure in failures:

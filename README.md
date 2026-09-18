@@ -26,6 +26,7 @@ Run the integration checks from this directory:
 godot --headless --path . --script res://tests/smoke.gd
 godot --headless --path . --script res://tests/route.gd
 godot --headless --path . --script res://tests/interactions.gd
+godot --headless --path . --script res://tests/rebound.gd
 ```
 
 The optional `tests/capture.gd` script saves three screenshots to `/tmp` when run with a graphics display.

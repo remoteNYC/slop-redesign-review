@@ -1,6 +1,8 @@
-extends Area2D
+extends AnimatableBody2D
 
 signal crushed_player
+
+const SPIKE_X := [-10.0, -3.0, 4.0]
 
 var high := Vector2.ZERO
 var drop_distance := 42.0
@@ -13,15 +15,28 @@ func configure(at: Vector2, phase: float = 0.0) -> void:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	collision_layer = 0
-	collision_mask = 2
-	monitoring = true
+	collision_layer = 1
+	collision_mask = 0
+	sync_to_physics = true
 	var collision := CollisionShape2D.new()
 	var shape := RectangleShape2D.new()
-	shape.size = Vector2(28, 38)
+	shape.size = Vector2(24, 36)
 	collision.shape = shape
+	collision.position.y = -4.0
 	add_child(collision)
-	body_entered.connect(_on_body_entered)
+	var spikes := Area2D.new()
+	spikes.collision_layer = 0
+	spikes.collision_mask = 2
+	spikes.monitoring = true
+	add_child(spikes)
+	for x in SPIKE_X:
+		var spike := CollisionPolygon2D.new()
+		spike.polygon = _spike_points(x)
+		spikes.add_child(spike)
+	spikes.body_entered.connect(_on_body_entered)
+
+func _spike_points(x: float) -> PackedVector2Array:
+	return PackedVector2Array([Vector2(x, 13), Vector2(x + 6, 13), Vector2(x + 3, 21)])
 
 func _physics_process(delta: float) -> void:
 	clock += delta
@@ -37,7 +52,7 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 func _on_body_entered(body: Node2D) -> void:
-	if body.is_in_group("player") and absf(body.global_position.x - global_position.x) < 20.0 and absf(body.global_position.y - global_position.y) < 28.0:
+	if body.is_in_group("player"):
 		crushed_player.emit()
 
 func _draw() -> void:
@@ -48,6 +63,5 @@ func _draw() -> void:
 	draw_rect(Rect2(-11, -16, 22, 25), Color("617b83"))
 	draw_rect(Rect2(-9, -14, 18, 4), stripe)
 	draw_rect(Rect2(-9, 5, 18, 3), Color("304551"))
-	for x in [-10, -3, 4]:
-		var points := PackedVector2Array([Vector2(x, 13), Vector2(x + 6, 13), Vector2(x + 3, 21)])
-		draw_colored_polygon(points, Color("e8c27f"))
+	for x in SPIKE_X:
+		draw_colored_polygon(_spike_points(x), Color("e8c27f"))

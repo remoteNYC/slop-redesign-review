@@ -1,0 +1,1714 @@
+START THIS PROJECT AGAIN FROM FIRST PRINCIPLES.
+
+You are acting as:
+- lead game designer
+- gameplay programmer
+- technical artist
+- level designer
+- AI-assisted content designer
+
+for a short but highly polished student game.
+
+==================================================
+0. HARD RESET
+==================================================
+
+Treat ALL existing gameplay code, scenes, mechanics, level layouts, controllers, prototype systems, and previous design decisions in this repository as OBSOLETE.
+
+Do NOT use old code as design inspiration.
+
+Do NOT preserve old architecture merely because it already exists.
+
+Do NOT assume any previously implemented mechanic is correct.
+
+You may:
+- remove obsolete gameplay files
+- archive them
+- replace them
+- restructure the Godot project
+
+Before destructive changes, preserve a recoverable Git state.
+
+The ONLY existing creative material that should be considered authoritative is:
+
+/references
+
+Study the files in /references carefully.
+
+The new game should be designed FROM SCRATCH.
+
+==================================================
+1. HIGHEST-LEVEL GOAL
+==================================================
+
+The primary goal is:
+
+MAKE A GAME THAT IS ACTUALLY FUN TO PLAY.
+
+The project must NOT become:
+
+- a visual demo
+- a procedural-generation demo
+- an AI demo
+- a walking simulator
+- a beautiful environment with weak gameplay
+- a collection of unrelated mechanics
+- a generic platformer with Chinese-style art
+- a grappling-hook clone with no original idea
+
+The highest priorities are:
+
+1. PLAYER EXPERIENCE
+2. CORE MECHANIC QUALITY
+3. RESPONSIVENESS
+4. MASTERY / SKILL EXPRESSION
+5. STRONG GAME FEEL / JUICE
+6. VISUAL COHERENCE
+7. ATMOSPHERE
+8. CONTENT QUANTITY
+
+Feature count is NOT a success metric.
+
+A small game with one excellent mechanic is much better than a large game with many mediocre mechanics.
+
+Always ask:
+
+“What is the player doing right now?”
+
+“Why is this enjoyable?”
+
+“Why would the player want to try this again?”
+
+==================================================
+2. RESEARCH FOUNDATION
+==================================================
+
+Before finalizing major design decisions, review the official work around:
+
+Artificial Intelligence and Games
+by Georgios N. Yannakakis and Julian Togelius.
+
+Find and use the official:
+- Artificial Intelligence and Games website
+- Table of Contents
+- Exercises
+- Procedural Content Generation material
+- Player Modeling / Player Experience material
+- PCG of Levels
+- PCG of Visuals
+- PCG of Rules and Mechanics
+- Evaluating Content Generators
+- Behavior Authoring
+
+Also review:
+Experience-Driven Procedural Content Generation (EDPCG)
+by Yannakakis and Togelius.
+
+Use these ideas correctly.
+
+Do NOT conclude:
+“AI means randomly generate everything.”
+
+Instead use these principles:
+
+- generated content exists to support player experience
+- technically solvable content is not automatically good content
+- level/content generators should be evaluated
+- game rules and mechanics themselves can create interesting possibility spaces
+- player experience is the actual target
+- AI-assisted generation should support human design judgment
+
+For this project:
+
+AI / generative techniques are TOOLS.
+
+PLAYER EXPERIENCE is the objective.
+
+==================================================
+3. CORE GAME CONCEPT
+==================================================
+
+Working title:
+WIND EFFIGY
+(name may change later)
+
+Core fantasy:
+
+BORROW THE WORLD TO MOVE THROUGH THE WORLD.
+
+The player controls a small ritual Wind Puppet living in an old mountain village.
+
+The protagonist is not a powerful hero.
+
+It does not simply fly.
+
+It does not receive a large set of abilities.
+
+Instead, it moves by borrowing force from the environment.
+
+The village itself becomes the movement system.
+
+The player sees:
+- roof beams
+- branches
+- bamboo
+- hanging structures
+- balconies
+- bells
+- bridges
+- architectural gaps
+
+and thinks:
+
+“Can I use that to get there?”
+
+The core emotional/gameplay fantasy is:
+
+The player begins by moving THROUGH the village.
+
+As skill develops, the player begins moving WITH the village.
+
+Architecture changes from scenery into possibility.
+
+==================================================
+4. CORE PLAYER EXPERIENCE
+==================================================
+
+The desired experience is:
+
+EASY TO UNDERSTAND
+
+SATISFYING IMMEDIATELY
+
+HARD TO MASTER
+
+The player should understand the core interaction within seconds.
+
+But several minutes later, a better player should be able to traverse the SAME space much more elegantly and quickly.
+
+The game should generate thoughts like:
+
+“I think I released too early.”
+
+“I could probably reach that roof.”
+
+“What if I enter the swing with more speed?”
+
+“Can I connect those two anchors without touching the ground?”
+
+“There might be a faster route.”
+
+“I almost had that. I want to try again.”
+
+If the player does not naturally think these things, the core mechanic needs more iteration.
+
+==================================================
+5. GAME FORMAT
+==================================================
+
+Use Godot 4.
+
+The new game is 2.5D.
+
+Gameplay should be fundamentally SIDE-VIEW / SIDE-READABLE.
+
+Movement should primarily occur in a 2D gameplay plane.
+
+Depth should be used for visual richness through:
+
+- background layers
+- foreground architecture
+- parallax
+- fog
+- vegetation
+- distant buildings
+- mountains
+- lighting
+- particles
+
+Do NOT use a complicated free third-person camera.
+
+The player must always understand:
+
+- where they are
+- where they can go
+- what they can interact with
+- their current movement direction
+- their likely trajectory
+
+==================================================
+6. CORE MECHANIC DIRECTION
+==================================================
+
+The current strongest mechanic concept is:
+
+WIND THREAD.
+
+The Wind Puppet has a physical thread / cord / ribbon that can temporarily attach to parts of the environment.
+
+The fundamental movement loop is:
+
+SEE POSSIBILITY
+→ ATTACH
+→ SWING
+→ BUILD / REDIRECT MOMENTUM
+→ RELEASE
+→ TRAVEL
+→ LAND OR CHAIN
+→ SEE NEXT POSSIBILITY
+
+The mechanic should NOT behave like:
+
+“press button and automatically grapple toward target.”
+
+Instead it should feel like:
+
+“attach to the world and use physics/timing to redirect yourself.”
+
+==================================================
+7. WIND THREAD — MECHANICAL REQUIREMENTS
+==================================================
+
+ATTACH:
+
+- fast and responsive
+- target must be readable
+- forgiving enough for beginners
+- not fully automatic
+- player should understand what they attached to
+
+SWING:
+
+- gravity matters
+- entry velocity matters
+- tether position matters
+- player timing matters
+- momentum should remain understandable
+- player accelerates through natural parts of the arc
+- limited directional influence is allowed
+- player input should shape the trajectory, not replace physics
+
+RELEASE:
+
+This is the main skill expression.
+
+Release timing should determine:
+- height
+- distance
+- direction
+- ability to connect to next object
+
+Do NOT assign an arbitrary preset launch direction.
+
+The player should feel:
+
+“I created that trajectory.”
+
+CHAINING:
+
+Allow:
+
+swing
+→ release
+→ airborne travel
+→ attach another anchor
+→ swing again
+
+The best moments should involve continuous movement without unnecessary stopping.
+
+==================================================
+8. CORE DESIGN PRINCIPLE:
+ONE MECHANIC, MANY POSSIBILITIES
+==================================================
+
+Do NOT create many unrelated abilities.
+
+Use a SMALL NUMBER of consistent rules interacting with different environmental properties.
+
+Prefer:
+
+ONE VERB
+×
+DIFFERENT MATERIAL BEHAVIOR
+×
+GEOMETRY
+×
+TIMING
+
+over:
+
+TEN DIFFERENT BUTTONS.
+
+Example interaction categories:
+
+-----------------------------------
+RIGID STRUCTURE
+-----------------------------------
+
+Examples:
+- roof beam
+- stone support
+- tree branch
+
+Behavior:
+- stable anchor
+- predictable movement
+- ideal for learning
+
+-----------------------------------
+ELASTIC STRUCTURE
+-----------------------------------
+
+Example:
+bamboo
+
+Behavior concept:
+- bends under force
+- stores energy
+- returns some energy
+- stronger approach can produce stronger launch
+
+Do NOT implement this as:
+fixed bounce animation + fixed launch velocity.
+
+Prefer a shared physical/property-based model.
+
+-----------------------------------
+RESONANT STRUCTURE
+-----------------------------------
+
+Examples:
+- temple bell
+- wind chime
+
+Behavior:
+- reacts to motion / impact / tension
+- motion produces sound
+- stronger interaction produces stronger resonance
+
+This may later affect nearby environment.
+
+Example:
+
+player transfers momentum
+→ bell moves
+→ resonance strength increases
+→ nearby hanging objects move
+→ birds react
+
+Do NOT hardcode this entire chain as a cinematic event if a reusable event/property system can express it simply.
+
+-----------------------------------
+OPTIONAL SURFACE INTERACTION
+-----------------------------------
+
+Example:
+water
+
+If and ONLY IF the core mechanic is already fun:
+
+high-speed movement may allow a short skim or momentum-preserving interaction.
+
+Do not add this simply for feature count.
+
+==================================================
+9. SYSTEMIC / EMERGENT DESIGN PRINCIPLE
+==================================================
+
+Take inspiration from systemic design and emergent interaction.
+
+The goal is NOT to reproduce Dwarf Fortress-scale simulation.
+
+The goal is to borrow this idea:
+
+SMALL CONSISTENT RULES
++
+DIFFERENT OBJECT PROPERTIES
+=
+MULTIPLE UNDERSTANDABLE RESULTS
+
+Prefer:
+
+PROPERTY + RULE + INTERACTION
+
+over:
+
+SCRIPTED SPECIAL CASE.
+
+Example:
+
+BAD:
+“When player touches bamboo, play bounce animation and launch player.”
+
+BETTER:
+“Bamboo has elasticity.
+Applied force affects bend.
+Stored energy influences return.”
+
+BAD:
+“When player hits bell, play bird animation.”
+
+BETTER:
+“Bell produces resonance intensity.
+Responsive entities can react to resonance.”
+
+The system should remain SMALL and readable.
+
+==================================================
+10. NO FEATURE BLOAT
+==================================================
+
+Do NOT add unless there is a strong gameplay reason:
+
+- combat
+- enemies
+- health
+- inventory
+- crafting
+- skill tree
+- dialogue system
+- quest log
+- collectibles everywhere
+- multiplayer
+- large procedural worlds
+- day/night cycle
+- giant NPC simulation
+- many movement abilities
+- RPG progression
+
+The player should become stronger primarily through SKILL.
+
+Not upgrades.
+
+==================================================
+11. PLAYER SKILL CURVE
+==================================================
+
+The same mechanic should serve different skill levels.
+
+BEGINNER:
+
+“I know what to press and I can move forward.”
+
+INTERMEDIATE:
+
+“I understand release timing and trajectory.”
+
+ADVANCED:
+
+“I can preserve speed, chain anchors, discover shortcuts, and traverse the same level much faster.”
+
+Expertise should be visible in movement.
+
+A beginner and a skilled player should NOT move through the exact same section in the exact same way.
+
+==================================================
+12. CORE LOOP
+==================================================
+
+Moment-to-moment gameplay should approximately follow:
+
+SEE
+
+→ choose a possibility
+
+COMMIT
+
+→ attach / jump / enter motion
+
+EXECUTE
+
+→ timing / steering
+
+FEEDBACK
+
+→ immediate audiovisual and physical response
+
+RESULT
+
+→ new trajectory / new location
+
+DISCOVER
+
+→ next movement opportunity
+
+The player should rarely spend long periods simply walking.
+
+Every few seconds there should ideally be:
+
+- a movement decision
+- an anchor
+- a route possibility
+- a timing challenge
+- an environmental response
+- a shortcut possibility
+- a visual landmark
+
+==================================================
+13. FAILURE DESIGN
+==================================================
+
+Failure should make the player want another attempt.
+
+Prefer:
+
+- lower recovery platforms
+- forgiving landing zones
+- quick retries
+- partial progress loss
+- understandable causes
+
+Avoid:
+
+- long reloads
+- constant instant death
+- replaying boring sections
+- unclear physics outcomes
+
+Desired reaction:
+
+“I almost got it.”
+
+NOT:
+
+“I don't want to do that again.”
+
+==================================================
+14. LEVEL DESIGN
+==================================================
+
+Do NOT blindly procedurally generate the final level.
+
+Build ONE intentionally authored, dense vertical slice.
+
+Target:
+approximately 4–7 minutes for a first-time player.
+
+A skilled player should eventually traverse it much faster.
+
+Conceptual structure:
+
+LOWER VILLAGE
+
+simple movement
+first obvious interaction
+
+↓
+
+FIRST GAP / FIRST SWING
+
+teach attach
+teach release
+
+↓
+
+BAMBOO AREA
+
+introduce a variation of the same rule
+
+↓
+
+DENSE VILLAGE
+
+roofs
+balconies
+wood beams
+vertical architecture
+
+↓
+
+ROUTE SPLIT
+
+SAFE ROUTE:
+easier
+slower
+more forgiving
+
+MASTERY ROUTE:
+harder
+faster
+more expressive
+
+↓
+
+UPPER SHRINE
+
+large visible bell / architectural landmark
+
+↓
+
+FINAL MOVEMENT SEQUENCE
+
+combine what the player has learned
+
+↓
+
+BELL PAYOFF
+
+a strong physical/audio/visual culmination
+
+==================================================
+15. LEVEL QUALITY EVALUATION
+==================================================
+
+Use AI-and-Games PCG evaluation ideas.
+
+Do NOT evaluate a level only by:
+
+“Can the player technically complete it?”
+
+Also consider:
+
+- traversal rhythm
+- path length
+- route choice
+- branching
+- challenge progression
+- recovery
+- shortcut discovery
+- mechanical reuse
+- downtime
+- repeated actions
+- player mastery
+- visual readability
+
+A technically valid level can still be boring.
+
+==================================================
+16. ROLE OF AI / PCG
+==================================================
+
+AI-assisted generation may be used for:
+
+VISUALS:
+- modular architecture
+- backgrounds
+- props
+- character concepts
+- palette exploration
+
+LEVEL DESIGN:
+- generate candidate chunks
+- propose anchor layouts
+- propose route variants
+- detect unreachable geometry
+
+TESTING:
+- visualize trajectories
+- estimate reachability
+- test parameter ranges
+- identify impossible or trivial jumps
+- compare alternate routes
+
+MECHANIC TUNING:
+- sweep parameter combinations
+- help analyze movement states
+
+But:
+
+DO NOT let automatic generation make final quality decisions.
+
+Generated content should be CURATED.
+
+Authored player experience has priority.
+
+==================================================
+17. REFERENCES — GENERAL RULE
+==================================================
+
+The PNG files under /references are NOT generic inspiration.
+
+Each group has a SPECIFIC ROLE.
+
+You must actively analyze them and use that analysis to construct:
+
+- visual direction
+- palette
+- environment kit
+- character direction
+- level composition
+- atmosphere
+
+Do NOT simply acknowledge them.
+
+Do NOT simply copy them.
+
+==================================================
+18. GROUP A — WORLD / ART DIRECTION
+==================================================
+
+Primary world references:
+
+village_02.png
+village_03.png
+village_04.png
+village_05.png
+village_06.png
+village_07.png
+
+These six images are the PRIMARY ART BIBLE.
+
+They determine WHAT THE WORLD SHOULD FEEL LIKE.
+
+Analyze them for:
+
+-----------------------------------
+COLOR
+-----------------------------------
+
+Extract a deliberately restrained game palette.
+
+Important recurring color families:
+
+- dirty / warm off-white plaster
+- desaturated blue-gray
+- muted cyan
+- dark brown / almost-black timber
+- gray-green roof
+- moss green
+- aged red
+- limited warm lantern orange
+
+Do NOT sample hundreds of colors.
+
+Create a coherent palette system such as:
+
+background palette
+midground palette
+gameplay palette
+foreground palette
+accent palette
+character palette
+
+Atmospheric depth should affect color.
+
+Far objects:
+- less contrast
+- cooler
+- more desaturated
+
+Playable objects:
+- clearer silhouettes
+- stronger local contrast
+
+==================================================
+19. ARCHITECTURAL LANGUAGE FROM REFERENCES
+==================================================
+
+Study recurring motifs:
+
+- weathered white plaster walls
+- exposed dark wood
+- tiled roofs
+- deep roof overhangs
+- wooden balconies
+- stacked buildings
+- narrow passages
+- stairs
+- bridges
+- retaining walls
+- hanging elements
+- poles
+- ropes
+- lanterns
+- temple/bell structures
+- irregular vertical construction
+
+Do NOT reproduce exact buildings.
+
+Instead derive a MODULAR ARCHITECTURAL VOCABULARY.
+
+Possible game modules:
+
+wall_white_01
+wall_mossy_01
+
+roof_small_01
+roof_large_01
+roof_edge_01
+
+wood_beam_01
+wood_support_01
+
+balcony_01
+window_01
+door_01
+
+stone_platform_01
+stone_stairs_01
+bridge_01
+
+lantern_01
+bell_01
+
+bamboo_cluster_01
+
+These should be ORIGINAL game assets.
+
+==================================================
+20. MATERIAL LANGUAGE
+==================================================
+
+Use the references to guide surface treatment.
+
+PLASTER:
+- aged
+- stained
+- uneven
+- dirty off-white
+- occasional moss
+
+WOOD:
+- dark
+- weathered
+- matte
+- structural
+
+STONE:
+- cool
+- damp
+- irregular
+- mossy edges
+
+ROOF:
+- dark blue-gray / gray-green
+- strong silhouette
+- old tile texture
+
+RED:
+- very limited
+- accent only
+
+Examples:
+- lantern
+- cord
+- small sign
+- paper
+- door detail
+
+==================================================
+21. ATMOSPHERE
+==================================================
+
+Extract atmospheric rules from village_02–07:
+
+- humidity
+- mist
+- layered mountains
+- atmospheric perspective
+- softened distant contrast
+- strong foreground silhouettes
+- old quiet village
+- vertical depth
+- structures partially disappearing into fog
+
+Use multiple visual layers.
+
+Example:
+
+FAR BACKGROUND:
+mountain silhouettes
+very low contrast
+
+DISTANT WORLD:
+village shapes / temples
+soft / misty
+
+MIDGROUND:
+trees / architecture
+
+GAMEPLAY LAYER:
+strong readability
+clear collision silhouettes
+
+FOREGROUND:
+roof edges
+branches
+bamboo
+mist
+hanging objects
+
+Do NOT flatten the village into one giant background image.
+
+==================================================
+22. LEVEL DESIGN LANGUAGE FROM VILLAGE REFERENCES
+==================================================
+
+The village images are NOT only visual references.
+
+Use their architectural structure as LEVEL DESIGN inspiration.
+
+Notice:
+
+- height variation
+- overlapping roofs
+- balconies
+- bridges
+- narrow streets
+- vertical building stacks
+- hanging structures
+- gaps
+- hidden spaces
+- visible landmarks
+
+Translate architecture into gameplay.
+
+Examples:
+
+roof support
+→ rigid anchor
+
+beam
+→ swing point
+
+balcony
+→ recovery platform
+
+bamboo
+→ elastic interaction
+
+bridge underside
+→ alternate traversal route
+
+bell tower
+→ major destination
+
+Architecture should generate gameplay.
+
+Do NOT create:
+
+beautiful background
++
+random floating platforms.
+
+Playable geometry should feel like a natural part of the village.
+
+==================================================
+23. GROUP B — CHARACTER REFERENCES
+==================================================
+
+Character concept references:
+
+character_01.png
+character_02.png
+character_03.png
+
+Analyze all three.
+
+Do NOT simply copy one.
+
+Extract useful qualities such as:
+
+- silhouette
+- proportions
+- mask language
+- cloth placement
+- color distribution
+- shape rhythm
+- readability
+- movement potential
+
+Then synthesize ONE ORIGINAL protagonist.
+
+Current preferred concept:
+
+WIND PUPPET / WIND EFFIGY.
+
+==================================================
+24. WIND PUPPET ART DIRECTION
+==================================================
+
+The character should feel like an artifact originally belonging to this village.
+
+Use shared material relationships.
+
+VILLAGE DARK TIMBER
+→ character wooden body
+
+VILLAGE WHITE PLASTER
+→ off-white ritual mask
+
+VILLAGE BLUE-GRAY PALETTE
+→ indigo / faded cloth
+
+VILLAGE RED ACCENTS
+→ muted red Wind Thread
+
+VILLAGE OLD METAL
+→ bronze bell
+
+The character and environment should appear to have been designed together.
+
+Do NOT make:
+- generic anime hero
+- caped child
+- Sky-like silhouette
+- generic fantasy mascot
+
+==================================================
+25. CHARACTER READABILITY
+==================================================
+
+Do not optimize for a still concept image.
+
+The character must work DURING GAMEPLAY.
+
+Design features should communicate:
+
+SPEED:
+ribbons / cloth trail
+
+DIRECTION:
+body lean / facing
+
+TENSION:
+Wind Thread line / posture
+
+ACCELERATION:
+secondary motion
+
+RELEASE:
+ribbon snap / extended pose
+
+LANDING:
+compression / recovery
+
+The silhouette should remain readable against:
+
+bright plaster
+
+AND
+
+dark wood.
+
+==================================================
+26. GROUP C — PIXEL / COMPOSITION REFERENCE
+==================================================
+
+File:
+
+pixel_style_01.png
+
+This image serves a DIFFERENT role.
+
+It does NOT determine final palette.
+
+It does NOT determine architecture.
+
+It does NOT determine setting.
+
+Use it ONLY for:
+
+- side-view traversal readability
+- 2.5D composition
+- dramatic scale
+- layered depth
+- foreground/background separation
+- platform spacing
+- landmark placement
+- silhouette clarity
+- negative space
+- keeping a small protagonist readable inside a large world
+
+In simple terms:
+
+village_02–07 determine:
+
+WHAT THE WORLD LOOKS LIKE.
+
+pixel_style_01 helps determine:
+
+HOW THE PLAYABLE WORLD IS COMPOSED.
+
+==================================================
+27. ABSOLUTE RULE:
+DO NOT DIRECTLY PIXELATE REFERENCES
+==================================================
+
+Do NOT directly:
+
+- downscale reference PNGs
+- apply nearest-neighbor scaling
+- posterize references
+- quantize full reference images
+- apply generic pixel filters
+- crop reference buildings and reuse them as final game assets
+- convert an entire reference image into a low-resolution game background
+
+The PNGs are:
+
+STYLE REFERENCES
+DESIGN REFERENCES
+MATERIAL REFERENCES
+COMPOSITION REFERENCES
+
+They are NOT final textures.
+
+If an asset looks like:
+
+“the reference image with a pixel-art filter”
+
+REJECT IT.
+
+==================================================
+28. CORRECT ART PIPELINE
+==================================================
+
+Use:
+
+REFERENCE
+
+→ ANALYZE
+
+→ ABSTRACT
+
+→ REDESIGN
+
+→ CREATE ORIGINAL GAME ASSET
+
+Example:
+
+WRONG:
+
+village_04.png
+→ shrink
+→ nearest-neighbor
+→ background.png
+
+CORRECT:
+
+village_04.png
+→ analyze roof / wall / stair / tree composition
+→ extract palette
+→ identify architectural motifs
+→ redesign modular roof/wall/stair assets
+→ construct a NEW village scene
+
+==================================================
+29. PIXEL / PAINTERLY VISUAL STYLE
+==================================================
+
+You have creative freedom to choose:
+
+- high-resolution pixel art
+- painterly pixel art
+- low-resolution painterly sprites
+- pixel/painterly hybrid
+
+Choose based on:
+
+1. visual cohesion
+2. character readability
+3. production efficiency
+4. animation quality
+5. gameplay clarity
+
+The final result should look INTENTIONALLY DESIGNED FOR A GAME.
+
+Not like filtered concept art.
+
+==================================================
+30. INITIAL ASSET KIT
+==================================================
+
+Do NOT create hundreds of assets.
+
+Create a small, reusable, cohesive kit.
+
+Approximate target:
+
+BACKGROUND:
+
+- 2–3 mountain layers
+- distant village silhouette
+- 2 fog/mist layers
+
+ARCHITECTURE:
+
+- 3 wall modules
+- 3 roof modules
+- 2 balcony modules
+- 3 timber modules
+- 2 stone/platform modules
+- stair module
+- bridge module
+
+INTERACTIVE:
+
+- rigid anchor
+- bamboo / elastic element
+- lantern
+- bell
+
+NATURE:
+
+- bamboo
+- branch/tree
+- moss/grass accents
+
+CHARACTER:
+
+- one Wind Puppet
+- idle state
+- movement state
+- airborne state
+- swing/tension state
+
+Use:
+- sprites
+- sprite sheets
+- cutout animation
+- procedural secondary motion
+- or another efficient solution
+
+Choose based on what produces the strongest result within scope.
+
+==================================================
+31. ART CONSISTENCY TEST
+==================================================
+
+Before accepting an asset, compare it against village_02–07.
+
+Reject it if it clashes strongly in:
+
+- saturation
+- palette
+- architecture
+- material language
+- detail density
+- silhouette
+- atmosphere
+
+The game should feel like ONE ARTIST designed the whole project.
+
+==================================================
+32. MOST IMPORTANT ART PRINCIPLE
+==================================================
+
+The references should produce a VISUAL SYSTEM.
+
+Not isolated copied pictures.
+
+The final village should be:
+
+A NEW PLACE
+
+that clearly belongs to:
+
+THE SAME VISUAL WORLD.
+
+==================================================
+33. JUICE / GAME FEEL
+==================================================
+
+Feedback is critical.
+
+But feedback must communicate GAME STATE.
+
+Avoid decorative noise.
+
+Tie audiovisual feedback to actual variables.
+
+SPEED:
+- stronger ribbon movement
+- stronger wind sound
+- subtle particle response
+
+TENSION:
+- thread becomes visibly taut
+- character pose changes
+- cloth aligns with force
+
+RELEASE:
+- thread snap
+- ribbon whip
+- sound transient
+- trajectory accent
+- subtle camera follow-through
+
+BAMBOO:
+- visible bend
+- creak
+- leaves respond
+- release communicates stored force
+
+BELL:
+- motion
+- resonance
+- sound intensity
+- nearby subtle response
+
+LANDING:
+- compression
+- dust/water/moss response
+- proportional sound
+
+Do NOT use constant camera shake.
+
+Do NOT cover bad mechanics with effects.
+
+==================================================
+34. AUDIO
+==================================================
+
+Audio should reinforce the physical world.
+
+Focus on:
+
+- wind
+- thread tension
+- cloth
+- wooden creaks
+- bamboo
+- footsteps
+- wet stone
+- water
+- bells
+- distant village ambience
+
+Sound intensity should often depend on gameplay state.
+
+Example:
+
+higher speed
+→ stronger wind
+
+greater tension
+→ stronger thread/cloth response
+
+stronger bell movement
+→ deeper/louder resonance
+
+==================================================
+35. PLAYER EXPERIENCE CURVE
+==================================================
+
+Design the first minutes deliberately.
+
+FIRST 10–15 SECONDS:
+
+The player should already do something satisfying.
+
+FIRST 30–60 SECONDS:
+
+The player understands the main verb.
+
+1–2 MINUTES:
+
+The player realizes timing / trajectory matters.
+
+2–4 MINUTES:
+
+The player chains movement or discovers a faster route.
+
+LATER:
+
+The player performs a movement sequence that would have been difficult at the beginning.
+
+The player should FEEL that they improved.
+
+==================================================
+36. NO LONG TUTORIAL
+==================================================
+
+Avoid text-heavy onboarding.
+
+Teach through:
+
+- level geometry
+- safe situations
+- visible anchors
+- consequence
+- repetition
+
+The first interaction should be safe and obvious.
+
+Later interactions should allow experimentation.
+
+==================================================
+37. DEVELOPMENT WORKFLOW
+==================================================
+
+PHASE 0 — RESET
+
+- preserve Git recovery point
+- ignore/delete/archive old gameplay implementation
+- preserve /references
+- establish clean project structure
+
+PHASE 1 — CORE MECHANIC
+
+Use placeholder art if necessary.
+
+Prototype:
+- movement
+- jump
+- Wind Thread
+- swing
+- release
+- chaining
+
+Do NOT proceed because “it technically works.”
+
+Tune until:
+- responsive
+- understandable
+- timing matters
+- repeated attempts are enjoyable
+
+==================================================
+MANDATORY GAMEPLAY GATE
+==================================================
+
+DO NOT build the full level or begin the final art pass immediately after the mechanic technically works.
+
+Before significant content production, create a small 30–60 second GREYBOX PLAYGROUND whose only purpose is to evaluate whether the core mechanic is actually enjoyable.
+
+It should include:
+
+- one very easy use of the mechanic
+- one timing-sensitive use
+- one two-anchor chain
+- one failed-action recovery area
+- one optional shortcut
+- enough open space to experiment
+
+Create approximately THREE tuning variants of the SAME core mechanic.
+
+Do NOT create three completely different games.
+
+For example:
+
+A — heavier and more controlled
+B — faster and more responsive
+C — stronger momentum and wider swing arcs
+
+Expose important tuning values clearly so they can be changed quickly.
+
+Then STOP major production work.
+
+Do not proceed to full level production merely because the mechanic functions.
+
+The prototype must first be evaluated by a HUMAN PLAYER.
+
+The human playtest should answer:
+
+1. Does the player feel responsible for the resulting trajectory?
+
+2. When the player fails, do they understand why?
+
+3. Does better timing visibly produce better results?
+
+4. After several attempts, does the player noticeably improve?
+
+5. Does the player begin imagining their own routes?
+
+6. Does the player voluntarily repeat the mechanic even without rewards?
+
+7. Does failure produce:
+   "I almost had it, let me try again"
+   rather than frustration or confusion?
+
+Only after human feedback confirms that the core interaction has potential should development proceed to the full vertical slice.
+
+Automated tests may verify:
+- reachability
+- physics stability
+- impossible jumps
+- parameter ranges
+
+But automated tests MUST NOT be treated as proof that the mechanic is fun.
+
+FUN REQUIRES HUMAN PLAYTESTING.
+
+PHASE 2 — MICRO LEVEL
+
+Build 30–60 seconds of gameplay.
+
+Include:
+
+- safe first swing
+- meaningful release timing
+- failure recovery
+- two-anchor chain
+- a possible shortcut
+
+PHASE 3 — PLAYABILITY ITERATION
+
+Prioritize:
+
+- control
+- trajectory readability
+- timing
+- retry speed
+- camera
+- geometry
+
+Do not add broad features.
+
+PHASE 4 — FULL VERTICAL SLICE
+
+Expand into approximately 4–7 minutes.
+
+PHASE 5 — ART PRODUCTION
+
+Use the /references pipeline defined above.
+
+Create ORIGINAL modular game assets.
+
+PHASE 6 — JUICE / AUDIO / POLISH
+
+Finish:
+- animation
+- effects
+- audio
+- atmosphere
+- camera polish
+- environmental response
+
+==================================================
+38. CREATIVE FREEDOM
+==================================================
+
+You have meaningful design freedom.
+
+Wind Thread is the current strongest mechanic hypothesis.
+
+Do NOT abandon it immediately.
+
+Prototype and tune it first.
+
+However:
+
+If repeated playability testing demonstrates a fundamental problem, you may refine it or propose a closely related mechanic.
+
+Any alternative MUST preserve the core fantasy:
+
+BORROW THE WORLD TO MOVE THROUGH THE WORLD.
+
+Any alternative must still provide:
+
+- player agency
+- immediate satisfaction
+- skill expression
+- mastery
+- environmental interaction
+- strong game feel
+- compatibility with the visual references
+
+Do NOT pivot into:
+
+- combat
+- generic platforming
+- walking exploration
+- collectathon
+- dialogue adventure
+
+==================================================
+39. SUCCESS CRITERIA
+==================================================
+
+Before calling the prototype successful, verify:
+
+1. Is the main action enjoyable without rewards?
+
+2. Does timing materially affect outcomes?
+
+3. Can a skilled player clearly outperform a beginner?
+
+4. Can the player discover shortcuts?
+
+5. Can the player invent a trajectory the level never explicitly taught?
+
+6. Does failure encourage retrying?
+
+7. Is the character always readable?
+
+8. Does the architecture naturally create gameplay?
+
+9. Does the art feel cohesive?
+
+10. Does the game feel responsive immediately?
+
+The most important question:
+
+AFTER ONE ATTEMPT,
+DOES THE PLAYER WANT TO TRY AGAIN?
+
+==================================================
+40. FINAL INSTRUCTION
+==================================================
+
+Start the project again from scratch.
+
+Ignore all previous gameplay implementation.
+
+Use /references as the authoritative creative input.
+
+Do not directly pixelate the PNG files.
+
+Analyze and redesign their visual language into original game-ready art.
+
+Use AI-and-Games principles to inform:
+- player experience
+- content generation
+- level evaluation
+- mechanics
+- testing
+
+Build around the concept:
+
+BORROW THE WORLD TO MOVE THROUGH THE WORLD.
+
+Prioritize:
+
+PLAYABILITY
+→ MECHANIC DEPTH
+→ GAME FEEL
+→ LEVEL QUALITY
+→ VISUAL COHERENCE
+→ POLISH
+
+over:
+
+FEATURE COUNT.
+
+You have creative freedom within those constraints.
+
+The desired final response from the player is:
+
+“That felt good.”
+
+“I understand what I did.”
+
+“I think I can do it better.”
+
+“I want to try again.”
+
+Begin now.
+
+IMPORTANT:
+
+First determine what image-generation / image-editing capability is actually available in the current environment.
+
+If a true image-generation tool is available, use it to create ORIGINAL game-ready pixel/painterly assets based on the visual system extracted from /references.
+
+Do NOT use image generation to copy the reference images.
+
+Generate NEW:
+- architecture
+- backgrounds
+- props
+- vegetation
+- character art
+
+that follow the extracted visual rules.
+
+If no real image-generation capability is available, do NOT fake final art by simply filtering the references.
+
+Instead:
+1. build clean temporary gameplay placeholders,
+2. define the exact asset specifications needed,
+3. preserve the visual system,
+4. avoid locking the level to poor placeholder art.
+

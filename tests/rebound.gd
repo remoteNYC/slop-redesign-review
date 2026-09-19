@@ -7,7 +7,7 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	for action in ["jump", "attack", "move_left", "move_right"]:
+	for action in ["jump", "attack", "move_left", "move_right", "aim_up", "aim_down"]:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action)
 	var arena := Node2D.new()

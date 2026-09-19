@@ -14,7 +14,7 @@ func _run() -> void:
 	game.selected_level = 1
 	game._open_level_select("CLOCKWORK ASCENT")
 	_check(game.mode == "level_select", "level select opens")
-	_check(InputMap.has_action("attack") and InputMap.has_action("jump"), "controls registered")
+	_check(InputMap.has_action("attack") and InputMap.has_action("jump") and InputMap.has_action("aim_up"), "controls registered")
 	Input.action_press("move_right")
 	await process_frame
 	Input.action_release("move_right")

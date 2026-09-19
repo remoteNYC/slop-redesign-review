@@ -200,8 +200,8 @@ func _draw() -> void:
 		_draw_checkpoint(checkpoint_markers[i], active_checkpoint >= i + 1)
 	_draw_goal(goal_marker)
 	if stage_number == 2:
-		draw_string(ThemeDB.fallback_font, Vector2(77, 443), "K / C  DASH TO NEAREST ENEMY", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("a9f4dd"))
-		draw_string(ThemeDB.fallback_font, Vector2(865, 287), "HIT TO DASH AGAIN", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("a9f4dd"))
+		draw_string(ThemeDB.fallback_font, Vector2(62, 443), "HOLD DIRECTION + K / C TO DASH", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("a9f4dd"))
+		draw_string(ThemeDB.fallback_font, Vector2(865, 287), "AIM WITHIN THE CONE", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("a9f4dd"))
 	else:
 		draw_string(ThemeDB.fallback_font, Vector2(160, 415), "J / X  DOWN STRIKE", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("f0d49c"))
 

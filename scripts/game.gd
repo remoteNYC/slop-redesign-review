@@ -283,11 +283,13 @@ func _update_hud() -> void:
 		return
 	hud_label.text = "HP %d/3    LEVEL %d    %s    %02d:%02d" % [player.health, stage_number, "DASH READY" if player.dash_ready else "DASH SPENT" if stage_number == 2 else "CLOCKWORK TOWER", int(elapsed / 60.0), int(elapsed) % 60]
 	if help_label != null:
-		help_label.text = "A/D MOVE   SPACE JUMP   K / C DASH   J / X STRIKE   R RETRY" if stage_number == 2 else "A/D MOVE   SPACE JUMP   J / X STRIKE   ESC PAUSE   R RETRY"
+		help_label.text = "WASD AIM   K/C DASH   SPACE JUMP   J/X STRIKE   R RETRY" if stage_number == 2 else "A/D MOVE   SPACE JUMP   J / X STRIKE   ESC PAUSE   R RETRY"
 
 func _setup_inputs() -> void:
 	_add_action("move_left", 0.2)
 	_add_action("move_right", 0.2)
+	_add_action("aim_up", 0.2)
+	_add_action("aim_down", 0.2)
 	_add_action("jump")
 	_add_action("attack")
 	_add_action("dash")
@@ -297,6 +299,10 @@ func _setup_inputs() -> void:
 	_add_key("move_left", KEY_LEFT)
 	_add_key("move_right", KEY_D)
 	_add_key("move_right", KEY_RIGHT)
+	_add_key("aim_up", KEY_W)
+	_add_key("aim_up", KEY_UP)
+	_add_key("aim_down", KEY_S)
+	_add_key("aim_down", KEY_DOWN)
 	_add_key("jump", KEY_SPACE)
 	_add_key("attack", KEY_J)
 	_add_key("attack", KEY_X)
@@ -306,8 +312,12 @@ func _setup_inputs() -> void:
 	_add_key("restart", KEY_R)
 	_add_pad_button("move_left", 13)
 	_add_pad_button("move_right", 14)
+	_add_pad_button("aim_up", 11)
+	_add_pad_button("aim_down", 12)
 	_add_pad_axis("move_left", 0, -1.0)
 	_add_pad_axis("move_right", 0, 1.0)
+	_add_pad_axis("aim_up", 1, -1.0)
+	_add_pad_axis("aim_down", 1, 1.0)
 	_add_pad_button("jump", 0)
 	_add_pad_button("attack", 2)
 	_add_pad_button("dash", 1)

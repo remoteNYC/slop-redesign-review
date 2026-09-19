@@ -1,10 +1,11 @@
 # Clockwork Ascent: Kinetic Prototype
 
-The project currently launches a one-room Godot 4.7 gray-box experiment for
+The project currently launches a continuous Godot 4.7 gray-box level for
 *Kinetic Clockwork*. Run, jump, and downward-strike a charging ram to transfer
-your horizontal momentum into it. When the ram hits the heavier rail carriage,
-the carriage inherits part of that momentum and becomes the moving platform
-needed to reach the upper-right exit.
+your horizontal momentum into it. The same heavy rail carriage carries that
+changing momentum through three connected situations: catch it after launch,
+deal with a second ram approaching from the opposite direction, and turn its
+leftward return into the jump to the exit gantry.
 
 The original two-level *Clockwork Ascent* build remains intact in
 `scenes/game.tscn`; this prototype is isolated in
@@ -26,13 +27,15 @@ Open the project in Godot 4.7 and run it, or run `godot --path .` from this dire
 | Reset experiment | R | Y / Triangle |
 
 The strike uses the player's current horizontal speed. A near-vertical strike
-damps the ram, a fast strike in the ram's direction accelerates it, and an
+damps a ram, a fast strike in its direction accelerates it, and an
 opposite-direction strike can slow or reverse it. The carriage coasts with
 deterministic friction, rebounds from its rail stops, carries the player, and
-accepts weaker direct strike corrections. Spikes and ram contact reset the same
-room state quickly.
+accepts weaker direct strike corrections. Safe work islands make imperfect
+momentum recoverable; spikes and ram contact reset the relay quickly.
 
 The on-screen velocity readout and arrows are temporary playtest diagnostics.
+The candidate comparison, section audit, and system-led discovery are recorded
+in [KINETIC_LEVEL_DESIGN.md](KINETIC_LEVEL_DESIGN.md).
 
 ## Checks
 

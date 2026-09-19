@@ -11,10 +11,11 @@ func _initialize() -> void:
 func _run() -> void:
 	_test_strike_transfer()
 	_test_playthrough_states()
+	_test_counter_outcomes()
 	_test_deterministic_damping()
 	await _test_room_strikes_collision_and_reset()
 	if failures.is_empty():
-		print("KINETIC PASS: weak, medium, strong, reversal, stop rebound, recovery, collision, and reset")
+		print("KINETIC PASS: transfer bands, stop rebound, direct correction, collision, relaunch recovery, reset, and exit")
 		quit(0)
 	else:
 		for failure in failures:
@@ -78,6 +79,26 @@ func _test_deterministic_damping() -> void:
 	_check(is_equal_approx(first.position.x, second.position.x) and is_equal_approx(first.velocity_x, second.velocity_x), "carriage damping is deterministic")
 	first.free()
 	second.free()
+
+func _test_counter_outcomes() -> void:
+	var head_on = _new_carriage()
+	head_on.velocity_x = 100.0
+	head_on.receive_ram_impact(-150.0)
+	_check(head_on.velocity_x < 0.0, "an untouched opposing ram reverses a rightward carriage (found %.2f)" % head_on.velocity_x)
+
+	var redirected_ram = RamScript.new()
+	redirected_ram.configure_kinetic_ram(Vector2.ZERO, -100.0, 100.0)
+	redirected_ram.velocity_x = -150.0
+	redirected_ram.receive_kinetic_strike(155.0)
+	_check(redirected_ram.velocity_x > 100.0, "a fast rightward strike turns the opposing ram into a rightward pacer (found %.2f)" % redirected_ram.velocity_x)
+
+	var recovered = _new_carriage()
+	recovered.velocity_x = -80.0
+	recovered.receive_ram_impact(150.0)
+	_check(recovered.velocity_x > 20.0, "a later launch-ram impact turns a failed leftward state back into progress (found %.2f)" % recovered.velocity_x)
+	head_on.free()
+	redirected_ram.free()
+	recovered.free()
 
 func _test_room_strikes_collision_and_reset() -> void:
 	var scene := load("res://scenes/kinetic_prototype.tscn") as PackedScene
@@ -143,24 +164,38 @@ func _test_room_strikes_collision_and_reset() -> void:
 	prototype.carriage.velocity_x = -31.0
 	prototype.ram.position.x = 250.0
 	prototype.ram.velocity_x = 90.0
+	prototype.counter_ram.position.x = 820.0
+	prototype.counter_ram.velocity_x = -70.0
 	prototype.reset_encounter()
 	_check(prototype.carriage.position.distance_to(prototype.CARRIAGE_START) < 2.0 and absf(prototype.carriage.velocity_x) < 1.0, "reset restores carriage position and velocity")
 	_check(prototype.ram.position == prototype.RAM_START and is_zero_approx(prototype.ram.velocity_x), "reset restores ram position and velocity")
+	_check(prototype.counter_ram.position == prototype.COUNTER_RAM_START and is_zero_approx(prototype.counter_ram.velocity_x), "reset restores the opposing ram")
 	_check(prototype.player.position == prototype.START_POSITION and prototype.player.active, "reset restores the player")
+	await process_frame
 
-	prototype.carriage.position.x = 256.0
-	prototype.ram.position.x = prototype.RAM_LEFT
+	prototype.player.active = false
+	prototype.counter_ram.state = "recover"
+	prototype.counter_ram.state_time = 10.0
+	prototype.carriage.velocity_x = -80.0
+	prototype.carriage.receive_ram_impact(150.0)
+	_check(prototype.carriage.velocity_x > 20.0, "the original ram can relaunch a carriage sent backward by the opposing ram (carriage %.2f)" % prototype.carriage.velocity_x)
+
+	prototype.reset_encounter()
+	await process_frame
 	prototype.ram.state = "recover"
 	prototype.ram.state_time = 10.0
-	prototype.player.reset_at(Vector2(276, 140))
+	prototype.counter_ram.state = "recover"
+	prototype.counter_ram.state_time = 10.0
+	prototype.carriage.set_physics_process(false)
+	prototype.carriage.sync_to_physics = false
+	prototype.carriage.position = Vector2(1075, prototype.carriage.position.y)
+	prototype.carriage.velocity_x = -16.0
+	prototype.player.reset_at(Vector2(1075, 140))
 	await create_timer(0.1).timeout
-	Input.action_press("move_right")
 	Input.action_press("jump")
-	await create_timer(0.32).timeout
+	await create_timer(0.3).timeout
 	Input.action_release("jump")
-	await create_timer(0.38).timeout
-	Input.action_release("move_right")
-	_check(prototype.mode == "complete", "a carriage in the controlled window makes the upper-right exit reachable (mode %s, player %s, velocity %s)" % [prototype.mode, prototype.player.position, prototype.player.velocity])
+	_check(prototype.mode == "complete", "the returning carriage carries the player through the one-way exit gantry (mode %s, player %s, velocity %s)" % [prototype.mode, prototype.player.position, prototype.player.velocity])
 	prototype.mode = "complete"
 	prototype.player.active = false
 	await create_timer(0.5).timeout

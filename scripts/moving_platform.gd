@@ -23,6 +23,7 @@ var rail_left := 0.0
 var rail_right := 0.0
 var velocity_x := 0.0
 var spawn_position := Vector2.ZERO
+var kinetic_friction := KINETIC_FRICTION
 
 func configure(at: Vector2, distance: float) -> void:
 	position = at
@@ -73,7 +74,7 @@ func advance_kinetic(delta: float) -> void:
 		position.x = rail_right
 		velocity_x = -absf(velocity_x) * STOP_RESTITUTION
 		stop_rebounded.emit(1, incoming_right, velocity_x)
-	velocity_x = move_toward(velocity_x, 0.0, KINETIC_FRICTION * delta)
+	velocity_x = move_toward(velocity_x, 0.0, kinetic_friction * delta)
 	if absf(velocity_x) < 0.5:
 		velocity_x = 0.0
 

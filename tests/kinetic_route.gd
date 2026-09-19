@@ -6,112 +6,115 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	var prototype = (load("res://scenes/kinetic_prototype.tscn") as PackedScene).instantiate()
-	root.add_child(prototype)
+	var level = (load("res://scenes/kinetic_prototype.tscn") as PackedScene).instantiate()
+	root.add_child(level)
 	await physics_frame
 	await physics_frame
-
+	var launch_hit := false
+	var carriage_hit := false
+	var counter_hit := false
+	var rode_moving_carriage := false
+	var used_return := false
+	var jump_latch := false
+	var chase_jump := false
 	Input.action_press("move_right")
 	Input.action_press("jump")
-	for frame in 40:
-		await physics_frame
-		if frame == 15:
+
+	for _frame in 900:
+		if jump_latch:
 			Input.action_release("jump")
-		if prototype.player.position.x >= 101.0:
-			break
-	Input.action_release("move_right")
-	Input.action_release("jump")
-	Input.action_press("move_left")
-	for _frame in 7:
-		await physics_frame
-	Input.action_release("move_left")
+			jump_latch = false
+		if chase_jump and level.player.velocity.y > 20.0:
+			Input.action_release("jump")
+			chase_jump = false
+		if Input.is_action_pressed("attack") and (level.player.velocity.y < -200.0 or level.player.is_on_floor()):
+			Input.action_release("attack")
 
-	for _frame in 80:
-		await physics_frame
-		if prototype.player.is_on_floor():
-			break
-	_check(prototype.mode == "play" and prototype.player.position.x > prototype.ram.position.x, "player can bait from the ram's right side")
+		if not launch_hit:
+			if level.ram.state == "windup" and level.player.position.x > 96.0:
+				Input.action_release("move_right")
+			if level.ram.state == "coast" and level.player.position.x - level.ram.position.x < 34.0 and level.player.position.y < 166.0:
+				Input.action_press("attack")
+			if level.player.velocity.y < -250.0 and level.ram.velocity_x > 40.0:
+				launch_hit = true
+				Input.action_press("move_right")
+		else:
+			_align_over(level.player.position.x, level.carriage.position.x)
+			var riding_carriage: bool = level.player.is_on_floor() and level.player.position.y < 150.0
+			if riding_carriage and absf(level.carriage.velocity_x) > 20.0:
+				rode_moving_carriage = true
+			if riding_carriage and not carriage_hit:
+				Input.action_press("jump")
+				jump_latch = true
+			elif not riding_carriage and not carriage_hit and level.player.velocity.y > -20.0 and level.player.position.y < 132.0:
+				Input.action_press("attack")
+			if "MID-AIR CORRECTION" in level.last_event and level.player.velocity.y < -250.0:
+				carriage_hit = true
 
-	for _frame in 90:
-		await physics_frame
-		if prototype.ram.state == "windup" and prototype.ram.state_time <= 0.16:
-			break
-	Input.action_press("jump")
-	for _frame in 10:
-		await physics_frame
-	Input.action_release("jump")
-	for _frame in 40:
-		await physics_frame
-		if prototype.ram.state == "coast":
-			break
-	Input.action_press("move_right")
-	for _frame in 4:
-		await physics_frame
-	Input.action_press("attack")
-	for _frame in 5:
-		await physics_frame
-	Input.action_release("attack")
-	var rebounded: bool = prototype.player.velocity.y < -170.0
-	_check(rebounded, "timed medium strike rebounds from the charging ram (player %s, ram x %.1f v %.1f)" % [prototype.player.position, prototype.ram.position.x, prototype.ram.velocity_x])
+			if carriage_hit and not counter_hit:
+				var counter_dx: float = level.counter_ram.position.x - level.player.position.x
+				if level.counter_ram.state in ["windup", "coast"] and counter_dx > -8.0:
+					Input.action_press("move_right")
+					Input.action_release("move_left")
+				if level.counter_ram.state == "windup" and counter_dx < 86.0 and riding_carriage:
+					Input.action_press("jump")
+					jump_latch = true
+				if level.counter_ram.state in ["windup", "coast"] and absf(counter_dx) < 50.0 and level.player.position.y < 166.0 and not riding_carriage:
+					Input.action_press("move_right")
+					Input.action_press("attack")
+				if "COUNTER REDIRECT" in level.last_event:
+					counter_hit = true
 
-	for _frame in 80:
-		await physics_frame
-		if prototype.carriage.velocity_x > 1.0:
-			break
-	_check(prototype.carriage.velocity_x > 40.0, "the struck ram reaches and moves the carriage (v %.1f)" % prototype.carriage.velocity_x)
+			if counter_hit and level.carriage.position.x > 1010.0 and level.carriage.velocity_x < -8.0:
+				used_return = true
+				Input.action_press("move_left")
+				Input.action_release("move_right")
+				if riding_carriage:
+					Input.action_press("jump")
+					chase_jump = true
+			elif counter_hit and level.player.is_on_floor() and level.player.position.y > 160.0 and level.player.position.x > 630.0 and level.player.position.x < 1000.0:
+				Input.action_press("move_right")
+				Input.action_press("jump")
+				chase_jump = true
 
-	var landed_on_carriage := false
-	for _frame in 100:
 		await physics_frame
-		if prototype.mode != "play":
+		if level.mode != "play":
 			break
-		if prototype.player.position.x > prototype.carriage.position.x + 10.0:
-			Input.action_release("move_right")
-			Input.action_press("move_left")
-		elif prototype.player.position.x < prototype.carriage.position.x - 10.0:
-			Input.action_release("move_left")
-			Input.action_press("move_right")
-		if prototype.player.is_on_floor() and absf(prototype.player.position.y - 141.0) < 3.0:
-			landed_on_carriage = true
-			break
-	Input.action_release("move_right")
-	Input.action_release("move_left")
-	_check(landed_on_carriage, "the rebound can land on the moving carriage (player %s, cart %s)" % [prototype.player.position, prototype.carriage.position])
-
-	if landed_on_carriage:
-		for _frame in 60:
-			await physics_frame
-			if prototype.carriage.position.x >= 238.0 or prototype.mode != "play":
-				break
-		Input.action_press("move_right")
-		for _frame in 24:
-			await physics_frame
-			if prototype.player.position.x >= prototype.carriage.position.x + 20.0:
-				break
-		Input.action_press("jump")
-		for _frame in 24:
-			await physics_frame
-		Input.action_release("jump")
-		for _frame in 32:
-			await physics_frame
-		Input.action_release("move_right")
-	_check(prototype.mode == "complete", "controlled interaction reaches the exit (mode %s, player %s, cart x %.1f, ram %s v %.1f, event %s)" % [prototype.mode, prototype.player.position, prototype.carriage.position.x, prototype.ram.position, prototype.ram.velocity_x, prototype.last_event])
 
 	_release_inputs()
-	prototype.mode = "complete"
-	prototype.player.active = false
-	prototype.ram.set_physics_process(false)
-	prototype.carriage.set_physics_process(false)
-	await create_timer(0.5).timeout
-	prototype.free()
+	_check(launch_hit, "the launch ram can be redirected during its charge")
+	_check(carriage_hit, "the moving carriage accepts a mid-air correction")
+	_check(rode_moving_carriage, "the player intercepts and rides the moving carriage")
+	_check(counter_hit, "the opposing ram can be redirected from the moving encounter")
+	_check(used_return, "a leftward carriage return becomes the route to the gantry")
+	_check(level.mode == "complete", "the continuous launch, counter, and return route reaches the exit (mode %s, player %s, carriage %.1f/%.1f, event %s)" % [level.mode, level.player.position, level.carriage.position.x, level.carriage.velocity_x, level.last_event])
+
+	level.mode = "complete"
+	level.player.active = false
+	for actor in level.rams:
+		actor.set_physics_process(false)
+	level.carriage.set_physics_process(false)
+	await create_timer(0.2).timeout
+	level.free()
 	await process_frame
 	if failures.is_empty():
-		print("KINETIC ROUTE PASS: bait, medium strike, ram impact, moving landing, ride, and exit")
+		print("KINETIC ROUTE PASS: moving catch, correction, counter-ram redirect, chase recovery, and useful return")
 		quit(0)
 	else:
 		for failure in failures:
 			printerr("KINETIC ROUTE FAIL: ", failure)
 		quit(1)
+
+func _align_over(player_x: float, target_x: float) -> void:
+	if player_x < target_x - 5.0:
+		Input.action_press("move_right")
+		Input.action_release("move_left")
+	elif player_x > target_x + 5.0:
+		Input.action_press("move_left")
+		Input.action_release("move_right")
+	else:
+		Input.action_release("move_left")
+		Input.action_release("move_right")
 
 func _release_inputs() -> void:
 	for action in ["move_left", "move_right", "jump", "attack"]:

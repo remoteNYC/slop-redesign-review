@@ -6,6 +6,14 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Expanded the Kinetic Clockwork experiment from one room into a continuous
+  three-part rail relay built around the same persistent carriage.
+- Added an opposing ram, a scrolling camera, recovery islands, and an exit
+  gantry reached by using the carriage's leftward return.
+- Extended the launch ram's range so a carriage reversed by the opposing ram
+  can return to it and be relaunched instead of forcing a restart.
+- Reduced carriage friction for the long rail, keeping objects in motion while
+  preserving direct strike corrections and rail-stop rebounds.
 - Added a one-room Kinetic Clockwork gray-box prototype as the project's launch
   scene while preserving the original two-level game scene.
 - Made downward strikes transfer the player's horizontal momentum into the

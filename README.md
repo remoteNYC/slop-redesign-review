@@ -3,6 +3,7 @@
 A two-level Godot 4.7 platformer set inside a clockwork tower. Run, jump, and strike downward in the first level, then chain momentum-preserving dashes through enemy relays in the second.
 
 The original design brief and implementation plan are in [GAME_PLAN.md](GAME_PLAN.md).
+Past and upcoming game changes are recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## Play
 

@@ -6,15 +6,21 @@ const EffectsScene = preload("res://scripts/effects.gd")
 const SfxScene = preload("res://scripts/sfx.gd")
 
 const START_POSITION := Vector2(48, 470)
+const PROGRESS_PATH := "user://progress.cfg"
+const LEVEL_COUNT := 2
 
 var level: Node2D
 var player: CharacterBody2D
 var effects: Node2D
 var sfx: Node
 var camera: Camera2D
-var mode := "title"
+var mode := "level_select"
 var checkpoint := START_POSITION
 var checkpoint_index := 0
+var stage_number := 1
+var unlocked_level := 1
+var selected_level := 1
+var completed_levels := 0
 var elapsed := 0.0
 
 var hud_label: Label
@@ -34,12 +40,14 @@ func _ready() -> void:
 	player.health_changed.connect(_on_health_changed)
 	player.died.connect(_on_player_died)
 	player.rebounded.connect(_on_rebounded)
+	player.dashed.connect(_on_dashed)
+	player.dash_connected.connect(_on_dash_connected)
 	player.jumped.connect(func(_point: Vector2) -> void: sfx.play("jump"))
 	add_child(player)
 	camera = Camera2D.new()
 	camera.position = Vector2(0, -12)
 	camera.limit_left = 0
-	camera.limit_right = int(level.WORLD_WIDTH)
+	camera.limit_right = int(level.world_width)
 	camera.limit_top = 160
 	camera.limit_bottom = 530
 	camera.position_smoothing_enabled = true
@@ -49,7 +57,9 @@ func _ready() -> void:
 	effects = EffectsScene.new()
 	add_child(effects)
 	_create_ui()
-	_show_overlay("CLOCKWORK ASCENT", "A tower of teeth and time.\n\nRun, jump, and strike downward to rise.\n\nENTER / SPACE / GAMEPAD A  TO BEGIN")
+	_load_progress()
+	selected_level = unlocked_level
+	_open_level_select("CLOCKWORK ASCENT")
 	get_tree().paused = true
 
 func _process(delta: float) -> void:
@@ -61,9 +71,15 @@ func _process(delta: float) -> void:
 			_show_overlay("PAUSED", "ESC / START  TO RESUME\nR  TO RETRY FROM CHECKPOINT")
 		elif Input.is_action_just_pressed("restart"):
 			_retry_checkpoint()
-	elif mode == "title":
-		if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("ui_accept"):
-			_start_game()
+	elif mode == "level_select":
+		if Input.is_action_just_pressed("move_left"):
+			selected_level = maxi(1, selected_level - 1)
+			_update_level_select()
+		elif Input.is_action_just_pressed("move_right"):
+			selected_level = mini(unlocked_level, selected_level + 1)
+			_update_level_select()
+		elif Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("ui_accept"):
+			_start_selected_level()
 	elif mode == "paused":
 		if Input.is_action_just_pressed("pause"):
 			mode = "play"
@@ -72,29 +88,35 @@ func _process(delta: float) -> void:
 		elif Input.is_action_just_pressed("restart"):
 			get_tree().paused = false
 			_retry_checkpoint()
-	elif mode == "won":
-		if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("ui_accept") or Input.is_action_just_pressed("restart"):
-			_new_run()
 	if mode == "play" and player.global_position.y > 565.0:
 		player.kill()
 	_update_hud()
 
 func _start_game() -> void:
-	mode = "play"
-	get_tree().paused = false
-	overlay.hide()
-	player.reset_at(START_POSITION)
+	_start_stage(1)
 
-func _new_run() -> void:
+func _start_selected_level() -> void:
+	_start_stage(selected_level)
+
+func _start_stage(number: int) -> void:
+	stage_number = clampi(number, 1, unlocked_level)
 	checkpoint = START_POSITION
 	checkpoint_index = 0
 	elapsed = 0.0
-	get_tree().paused = false
-	player.reset_at(START_POSITION)
+	player.dash_enabled = stage_number == 2
 	_rebuild_level()
+	player.reset_at(START_POSITION)
+	camera.limit_right = int(level.world_width)
 	camera.reset_smoothing()
 	mode = "play"
+	get_tree().paused = false
 	overlay.hide()
+
+func _new_run() -> void:
+	_start_stage(1)
+
+func _start_second_stage() -> void:
+	_start_stage(2)
 
 func _retry_checkpoint() -> void:
 	if mode == "dead":
@@ -105,7 +127,7 @@ func _retry_checkpoint() -> void:
 	player.kill()
 
 func _on_player_died() -> void:
-	if mode == "won" or mode == "title":
+	if mode == "level_select":
 		return
 	mode = "dead"
 	effects.burst(player.global_position, Color("e9876c"), 15)
@@ -122,6 +144,7 @@ func _finish_respawn() -> void:
 
 func _create_level() -> void:
 	level = LevelScene.new()
+	level.stage_number = stage_number
 	add_child(level)
 	move_child(level, 0)
 	level.player_touched_enemy.connect(_on_player_touched_enemy)
@@ -155,11 +178,14 @@ func _on_checkpoint_reached(at: Vector2, index: int) -> void:
 func _on_stage_finished() -> void:
 	if mode != "play":
 		return
-	mode = "won"
 	sfx.play("win")
 	effects.burst(player.global_position, Color("fff1ac"), 22)
 	get_tree().paused = true
-	_show_overlay("TOWER CLEARED", "THE BELL RINGS AGAIN\n\nTIME  %02d:%02d\n\nENTER / SPACE  TO PLAY AGAIN" % [int(elapsed / 60.0), int(elapsed) % 60])
+	completed_levels |= 1 << (stage_number - 1)
+	unlocked_level = maxi(unlocked_level, mini(LEVEL_COUNT, stage_number + 1))
+	selected_level = mini(LEVEL_COUNT, stage_number + 1)
+	_save_progress()
+	_open_level_select("LEVEL %d COMPLETE  %02d:%02d" % [stage_number, int(elapsed / 60.0), int(elapsed) % 60])
 
 func _on_enemy_defeated(at: Vector2) -> void:
 	effects.burst(at, Color("e9b96f"), 12)
@@ -172,11 +198,45 @@ func _on_rebounded(at: Vector2) -> void:
 	effects.burst(at, Color("f6d68c"), 9)
 	sfx.play("bounce")
 
+func _on_dashed(at: Vector2) -> void:
+	effects.burst(at, Color("a9f4dd"), 7)
+	sfx.play("dash")
+
+func _on_dash_connected(at: Vector2) -> void:
+	effects.burst(at, Color("a9f4dd"), 11)
+
 func _on_health_changed(value: int) -> void:
 	if value < 3 and value > 0:
 		effects.burst(player.global_position, Color("e9876c"), 8)
 		sfx.play("hit")
 	_update_hud()
+
+func _load_progress() -> void:
+	var progress := ConfigFile.new()
+	if progress.load(PROGRESS_PATH) == OK:
+		unlocked_level = clampi(int(progress.get_value("progress", "unlocked_level", 1)), 1, LEVEL_COUNT)
+		completed_levels = int(progress.get_value("progress", "completed_levels", 1 if unlocked_level >= 2 else 0))
+
+func _save_progress() -> void:
+	var progress := ConfigFile.new()
+	progress.set_value("progress", "unlocked_level", unlocked_level)
+	progress.set_value("progress", "completed_levels", completed_levels)
+	progress.save(PROGRESS_PATH)
+
+func _open_level_select(title: String) -> void:
+	mode = "level_select"
+	get_tree().paused = true
+	selected_level = clampi(selected_level, 1, unlocked_level)
+	overlay_title.text = title
+	_update_level_select()
+
+func _update_level_select() -> void:
+	var first_cursor := ">" if selected_level == 1 else " "
+	var second_cursor := ">" if selected_level == 2 else " "
+	var first_status := "  [CLEARED]" if completed_levels & 1 else ""
+	var second_status := "  [LOCKED]" if unlocked_level < 2 else "  [CLEARED]" if completed_levels & 2 else ""
+	overlay_body.text = "%s  LEVEL 1   FOUNDRY%s\n%s  LEVEL 2   RELAY SHAFT%s\n\nA / D OR ARROWS  SELECT\nENTER / SPACE / GAMEPAD A  START" % [first_cursor, first_status, second_cursor, second_status]
+	overlay.show()
 
 func _create_ui() -> void:
 	var canvas := CanvasLayer.new()
@@ -185,7 +245,7 @@ func _create_ui() -> void:
 	hud_label = _label(Vector2(10, 8), Vector2(365, 17), 10, Color("f5dfa8"))
 	canvas.add_child(hud_label)
 	help_label = _label(Vector2(9, 195), Vector2(366, 15), 8, Color("b6c4bf"))
-	help_label.text = "A/D MOVE   SPACE JUMP   J / X DOWN STRIKE   ESC PAUSE   R RETRY"
+	help_label.text = "A/D MOVE   SPACE JUMP   J / X STRIKE   ESC PAUSE   R RETRY"
 	canvas.add_child(help_label)
 	overlay = ColorRect.new()
 	overlay.position = Vector2.ZERO
@@ -221,13 +281,16 @@ func _show_overlay(title: String, body: String) -> void:
 func _update_hud() -> void:
 	if hud_label == null or player == null:
 		return
-	hud_label.text = "HP %d/3     CLOCKWORK TOWER     %02d:%02d" % [player.health, int(elapsed / 60.0), int(elapsed) % 60]
+	hud_label.text = "HP %d/3    LEVEL %d    %s    %02d:%02d" % [player.health, stage_number, "DASH READY" if player.dash_ready else "DASH SPENT" if stage_number == 2 else "CLOCKWORK TOWER", int(elapsed / 60.0), int(elapsed) % 60]
+	if help_label != null:
+		help_label.text = "A/D MOVE   SPACE JUMP   K / C DASH   J / X STRIKE   R RETRY" if stage_number == 2 else "A/D MOVE   SPACE JUMP   J / X STRIKE   ESC PAUSE   R RETRY"
 
 func _setup_inputs() -> void:
 	_add_action("move_left", 0.2)
 	_add_action("move_right", 0.2)
 	_add_action("jump")
 	_add_action("attack")
+	_add_action("dash")
 	_add_action("pause")
 	_add_action("restart")
 	_add_key("move_left", KEY_A)
@@ -237,6 +300,8 @@ func _setup_inputs() -> void:
 	_add_key("jump", KEY_SPACE)
 	_add_key("attack", KEY_J)
 	_add_key("attack", KEY_X)
+	_add_key("dash", KEY_K)
+	_add_key("dash", KEY_C)
 	_add_key("pause", KEY_ESCAPE)
 	_add_key("restart", KEY_R)
 	_add_pad_button("move_left", 13)
@@ -245,6 +310,7 @@ func _setup_inputs() -> void:
 	_add_pad_axis("move_right", 0, 1.0)
 	_add_pad_button("jump", 0)
 	_add_pad_button("attack", 2)
+	_add_pad_button("dash", 1)
 	_add_pad_button("pause", 6)
 	_add_pad_button("restart", 3)
 

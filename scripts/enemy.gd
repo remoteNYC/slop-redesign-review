@@ -26,6 +26,7 @@ func configure(enemy_kind: String, at: Vector2, patrol_left: float, patrol_right
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_to_group("dash_targets")
 	collision_layer = 16
 	collision_mask = 2
 	monitoring = true
@@ -33,7 +34,7 @@ func _ready() -> void:
 	var collision := CollisionShape2D.new()
 	var shape := RectangleShape2D.new()
 	match kind:
-		"drone": shape.size = Vector2(18, 12)
+		"drone", "relay": shape.size = Vector2(18, 12)
 		"sentry": shape.size = Vector2(20, 20)
 		_: shape.size = Vector2(16, 13)
 	collision.shape = shape
@@ -57,6 +58,8 @@ func _physics_process(delta: float) -> void:
 		"drone":
 			position.x = home.x + sin(clock * 1.7) * (right_bound - left_bound) * 0.5
 			position.y = home.y + sin(clock * 2.4) * 6.0
+		"relay":
+			position.y = home.y + sin(clock * 2.4) * 4.0
 		"sentry":
 			_update_sentry(delta)
 	queue_redraw()
@@ -106,11 +109,16 @@ func receive_strike() -> bool:
 		state_time = 0.8
 	return true
 
+func receive_dash() -> bool:
+	return receive_strike()
+
 func _on_body_entered(body: Node2D) -> void:
 	if not alive or not body.is_in_group("player"):
 		return
 	var reach := Vector2(15, 16) if kind != "sentry" else Vector2(16, 19)
 	if absf(body.global_position.x - global_position.x) > reach.x or absf(body.global_position.y - global_position.y) > reach.y:
+		return
+	if body.has_method("is_dashing") and body.is_dashing():
 		return
 	if body.has_method("is_striking") and body.is_striking() and body.global_position.y < global_position.y:
 		return
@@ -132,10 +140,10 @@ func _draw() -> void:
 			draw_rect(Rect2(2 * facing, -3, 2, 2), eye)
 			draw_rect(Rect2(-6, 4, 3, 3), ink)
 			draw_rect(Rect2(3, 4, 3, 3), ink)
-		"drone":
+		"drone", "relay":
 			draw_rect(Rect2(-9, -4, 18, 8), ink)
-			draw_rect(Rect2(-7, -3, 14, 6), steel)
-			draw_rect(Rect2(-3, -2, 6, 4), eye)
+			draw_rect(Rect2(-7, -3, 14, 6), Color("397c82") if kind == "relay" else steel)
+			draw_rect(Rect2(-3, -2, 6, 4), Color("a9f4dd") if kind == "relay" else eye)
 			draw_rect(Rect2(-11, -6, 5, 2), brass)
 			draw_rect(Rect2(6, -6, 5, 2), brass)
 			draw_rect(Rect2(-12, -8 + int(sin(clock * 18.0)), 7, 1), Color("9ac6c7"))

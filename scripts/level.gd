@@ -17,12 +17,20 @@ const WORLD_BOTTOM := 560.0
 
 var blocks: Array[Rect2] = []
 var spikes: Array[Rect2] = []
+var checkpoint_markers: Array[Vector2] = []
+var goal_marker := Vector2.ZERO
+var stage_number := 1
+var world_width := WORLD_WIDTH
 var active_checkpoint := 0
 var clock := 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	_build_stage()
+	if stage_number == 2:
+		world_width = 2600.0
+		_build_dash_stage()
+	else:
+		_build_stage()
 
 func _process(delta: float) -> void:
 	clock += delta
@@ -62,6 +70,29 @@ func _build_stage() -> void:
 	_add_checkpoint(0, Vector2(735, 388), Vector2(735, 395))
 	_add_checkpoint(1, Vector2(1460, 313), Vector2(1460, 320))
 	_add_goal(Vector2(1904, 239))
+
+func _build_dash_stage() -> void:
+	_add_block(Rect2(0, 480, 300, 80))
+	_add_block(Rect2(830, 330, 245, 230))
+	_add_block(Rect2(1615, 280, 235, 280))
+	_add_block(Rect2(2210, 250, 380, 310))
+	_add_block(Rect2(-28, 180, 28, 380))
+	_add_block(Rect2(2590, 180, 28, 380))
+	_add_spikes(Rect2(300, 500, 530, 60))
+	_add_spikes(Rect2(1075, 500, 540, 60))
+	_add_spikes(Rect2(1850, 500, 360, 60))
+	_add_spikes(Rect2(944, 322, 32, 8))
+	_add_spikes(Rect2(1720, 272, 34, 8))
+	_add_spikes(Rect2(2360, 242, 34, 8))
+	for point in [Vector2(355, 440), Vector2(480, 400), Vector2(605, 355), Vector2(735, 310), Vector2(1130, 280), Vector2(1260, 325), Vector2(1395, 280), Vector2(1535, 235), Vector2(1905, 235), Vector2(2030, 268), Vector2(2150, 215)]:
+		_add_enemy("relay", point, point.x, point.x)
+	_add_crusher(Vector2(1015, 260), 0.45)
+	_add_crusher(Vector2(1790, 210), 1.2)
+	_add_crusher(Vector2(2450, 180), 2.0)
+	_add_checkpoint(0, Vector2(870, 313), Vector2(870, 320))
+	_add_checkpoint(1, Vector2(1650, 263), Vector2(1650, 270))
+	_add_checkpoint(2, Vector2(2300, 233), Vector2(2300, 240))
+	_add_goal(Vector2(2550, 229))
 
 func _add_block(rect: Rect2) -> void:
 	blocks.append(rect)
@@ -111,6 +142,7 @@ func _add_crusher(at: Vector2, phase: float) -> void:
 	add_child(crusher)
 
 func _add_checkpoint(index: int, at: Vector2, respawn: Vector2) -> void:
+	checkpoint_markers.append(at)
 	var area := Area2D.new()
 	area.position = at
 	area.collision_layer = 0
@@ -125,6 +157,7 @@ func _add_checkpoint(index: int, at: Vector2, respawn: Vector2) -> void:
 	add_child(area)
 
 func _add_goal(at: Vector2) -> void:
+	goal_marker = at
 	var area := Area2D.new()
 	area.position = at
 	area.collision_layer = 0
@@ -163,23 +196,27 @@ func _draw() -> void:
 		_draw_block(rect)
 	for rect in spikes:
 		_draw_spikes(rect)
-	_draw_checkpoint(Vector2(735, 388), active_checkpoint >= 1)
-	_draw_checkpoint(Vector2(1460, 313), active_checkpoint >= 2)
-	_draw_goal(Vector2(1904, 239))
-	draw_string(ThemeDB.fallback_font, Vector2(160, 415), "J / X  DOWN STRIKE", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("f0d49c"))
+	for i in checkpoint_markers.size():
+		_draw_checkpoint(checkpoint_markers[i], active_checkpoint >= i + 1)
+	_draw_goal(goal_marker)
+	if stage_number == 2:
+		draw_string(ThemeDB.fallback_font, Vector2(77, 443), "K / C  DASH TO NEAREST ENEMY", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("a9f4dd"))
+		draw_string(ThemeDB.fallback_font, Vector2(865, 287), "HIT TO DASH AGAIN", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("a9f4dd"))
+	else:
+		draw_string(ThemeDB.fallback_font, Vector2(160, 415), "J / X  DOWN STRIKE", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("f0d49c"))
 
 func _draw_background() -> void:
-	draw_rect(Rect2(0, 145, WORLD_WIDTH, 415), Color("111c2a"))
-	for x in range(0, int(WORLD_WIDTH), 256):
+	draw_rect(Rect2(0, 145, world_width, 415), Color("111c2a"))
+	for x in range(0, int(world_width), 256):
 		draw_rect(Rect2(x + 24, 165, 40, 395), Color("182737"))
 		draw_rect(Rect2(x + 68, 165, 5, 395), Color("304150"))
 		draw_rect(Rect2(x + 210, 165, 10, 395), Color("263747"))
-	for x in range(0, int(WORLD_WIDTH), 384):
+	for x in range(0, int(world_width), 384):
 		_draw_gear(Vector2(x + 320, 265), 41, Color("273d48"))
 		_draw_gear(Vector2(x + 165, 365), 22, Color("233846"))
 	for y in [190, 285, 380, 475]:
-		draw_rect(Rect2(0, y, WORLD_WIDTH, 3), Color("263847"))
-	for x in range(0, int(WORLD_WIDTH), 64):
+		draw_rect(Rect2(0, y, world_width, 3), Color("263847"))
+	for x in range(0, int(world_width), 64):
 		draw_rect(Rect2(x + 6, 184, 2, 2), Color("58717a"))
 	_draw_pipe(Vector2(68, 430), Vector2(68, 268))
 	_draw_pipe(Vector2(1105, 405), Vector2(1105, 233))

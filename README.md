@@ -1,6 +1,6 @@
 # Clockwork Ascent
 
-A short Godot 4.7 platformer set inside a clockwork tower. Run, jump, and strike downward in midair to rebound from enemies and gold clockwork devices. Reach the bell at the top of the stage.
+A two-level Godot 4.7 platformer set inside a clockwork tower. Run, jump, and strike downward in the first level, then chain momentum-preserving dashes through enemy relays in the second.
 
 The original design brief and implementation plan are in [GAME_PLAN.md](GAME_PLAN.md).
 
@@ -13,10 +13,13 @@ Open the project in Godot 4.7 and run it, or run `godot --path .` from this dire
 | Move | A/D or arrow keys | Left stick or D-pad |
 | Jump | Space | A / Cross |
 | Downward strike | J or X, in midair | X / Square |
+| Target dash | K or C, in level two | B / Circle |
 | Pause | Esc | Start |
 | Retry checkpoint | R | Y / Triangle |
 
-The player has three health points. Spikes, crushers, and falls restart at the latest checkpoint. The first stage uses only the starting abilities; later levels can add ability pickups.
+The player has three health points. Spikes, crushers, and falls restart at the latest checkpoint. Reaching the first bell opens the Relay Shaft and unlocks the dash. It targets the nearest visible enemy in range, defeats it, preserves the player's movement, and refreshes so another dash can follow immediately.
+
+The title and completion screens include a level selector. Use A/D or the arrow keys to choose an unlocked level, then press Enter, Space, or gamepad A to start it. Completing level one permanently unlocks level two through the local `user://progress.cfg` save.
 
 ## Checks
 
@@ -27,6 +30,7 @@ godot --headless --path . --script res://tests/smoke.gd
 godot --headless --path . --script res://tests/route.gd
 godot --headless --path . --script res://tests/interactions.gd
 godot --headless --path . --script res://tests/rebound.gd
+godot --headless --path . --script res://tests/dash.gd
 ```
 
 The optional `tests/capture.gd` script saves three screenshots to `/tmp` when run with a graphics display.

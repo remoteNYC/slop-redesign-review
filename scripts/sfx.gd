@@ -5,6 +5,7 @@ var samples: Dictionary = {}
 func _ready() -> void:
 	samples["jump"] = _make_sound(370.0, 0.085, 0.15, false)
 	samples["bounce"] = _make_sound(660.0, 0.14, 0.19, false)
+	samples["dash"] = _make_sound(860.0, 0.12, 0.16, false)
 	samples["hit"] = _make_sound(150.0, 0.11, 0.18, true)
 	samples["death"] = _make_sound(115.0, 0.26, 0.17, true)
 	samples["checkpoint"] = _make_sound(520.0, 0.24, 0.14, false)

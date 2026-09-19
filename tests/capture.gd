@@ -20,6 +20,18 @@ func _run() -> void:
 	game.camera.reset_smoothing()
 	await create_timer(0.12).timeout
 	_save("/tmp/slop_stage_end.png")
+	game.unlocked_level = 2
+	game._start_second_stage()
+	await create_timer(0.12).timeout
+	_save("/tmp/slop_dash_start.png")
+	game.player.global_position = Vector2(1250, 300)
+	game.camera.reset_smoothing()
+	await create_timer(0.12).timeout
+	_save("/tmp/slop_dash_middle.png")
+	game.player.global_position = Vector2(2050, 245)
+	game.camera.reset_smoothing()
+	await create_timer(0.12).timeout
+	_save("/tmp/slop_dash_end.png")
 	await create_timer(0.3).timeout
 	paused = false
 	game.free()

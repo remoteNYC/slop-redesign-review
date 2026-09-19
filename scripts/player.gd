@@ -182,10 +182,15 @@ func _check_strike() -> void:
 	query.transform = Transform2D(0.0, global_position + Vector2(0.0, 14.0))
 	query.collision_mask = 16
 	query.collide_with_areas = true
-	query.collide_with_bodies = false
+	query.collide_with_bodies = true
 	for result in get_world_2d().direct_space_state.intersect_shape(query, 8):
 		var target: Object = result["collider"]
-		if target.has_method("receive_strike") and target.receive_strike():
+		var connected := false
+		if target.has_method("receive_kinetic_strike"):
+			connected = target.receive_kinetic_strike(velocity.x)
+		if not connected and target.has_method("receive_strike"):
+			connected = target.receive_strike()
+		if connected:
 			attack_time = 0.0
 			velocity.y = REBOUND_SPEED
 			jump_cut_available = false

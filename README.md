@@ -1,6 +1,15 @@
-# Clockwork Ascent
+# Clockwork Ascent: Kinetic Prototype
 
-A two-level Godot 4.7 platformer set inside a clockwork tower. Run, jump, and strike downward in the first level, then chain momentum-preserving dashes through enemy relays in the second.
+The project currently launches a one-room Godot 4.7 gray-box experiment for
+*Kinetic Clockwork*. Run, jump, and downward-strike a charging ram to transfer
+your horizontal momentum into it. When the ram hits the heavier rail carriage,
+the carriage inherits part of that momentum and becomes the moving platform
+needed to reach the upper-right exit.
+
+The original two-level *Clockwork Ascent* build remains intact in
+`scenes/game.tscn`; this prototype is isolated in
+`scenes/kinetic_prototype.tscn` so the mechanic can be evaluated before either
+full level is redesigned.
 
 The original design brief and implementation plan are in [GAME_PLAN.md](GAME_PLAN.md).
 Past and upcoming game changes are recorded in [CHANGELOG.md](CHANGELOG.md).
@@ -14,14 +23,16 @@ Open the project in Godot 4.7 and run it, or run `godot --path .` from this dire
 | Move | A/D or arrow keys | Left stick or D-pad |
 | Jump | Space | A / Cross |
 | Downward strike | J or X, in midair | X / Square |
-| Dash aim | W/A/S/D or arrow keys | Left stick or D-pad |
-| Target dash | K or C, in level two | B / Circle |
-| Pause | Esc | Start |
-| Retry checkpoint | R | Y / Triangle |
+| Reset experiment | R | Y / Triangle |
 
-The player has three health points. Spikes, crushers, and falls restart at the latest checkpoint. Reaching the first bell opens the Relay Shaft and unlocks the dash. Hold a direction and press dash to target the nearest visible enemy within 35 degrees of your aim. A successful hit defeats the target, preserves the player's movement, and refreshes the dash so another can follow immediately.
+The strike uses the player's current horizontal speed. A near-vertical strike
+damps the ram, a fast strike in the ram's direction accelerates it, and an
+opposite-direction strike can slow or reverse it. The carriage coasts with
+deterministic friction, rebounds from its rail stops, carries the player, and
+accepts weaker direct strike corrections. Spikes and ram contact reset the same
+room state quickly.
 
-The title and completion screens include a level selector. Use A/D or the arrow keys to choose an unlocked level, then press Enter, Space, or gamepad A to start it. Completing level one permanently unlocks level two through the local `user://progress.cfg` save.
+The on-screen velocity readout and arrows are temporary playtest diagnostics.
 
 ## Checks
 
@@ -33,6 +44,9 @@ godot --headless --path . --script res://tests/route.gd
 godot --headless --path . --script res://tests/interactions.gd
 godot --headless --path . --script res://tests/rebound.gd
 godot --headless --path . --script res://tests/dash.gd
+godot --headless --path . --script res://tests/kinetic.gd
+godot --headless --path . --script res://tests/kinetic_route.gd
 ```
 
-The optional `tests/capture.gd` script saves three screenshots to `/tmp` when run with a graphics display.
+The optional capture scripts save screenshots to `/tmp` when run with a
+graphics display.

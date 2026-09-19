@@ -6,7 +6,16 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
-- No game changes yet.
+- Added a one-room Kinetic Clockwork gray-box prototype as the project's launch
+  scene while preserving the original two-level game scene.
+- Made downward strikes transfer the player's horizontal momentum into the
+  prototype ram and heavy rail carriage. The persistent ram can then transfer
+  its current momentum into the carriage on contact.
+- Added deterministic carriage friction, damped rail-stop rebounds, direct
+  strike corrections, quick room resets, and temporary velocity diagnostics.
+- Built a compact test room with a safe starting ledge, spike rail, movable
+  carriage, charging ram, and upper-right exit to test undershoot, controlled
+  pushes, overshoot, and recovery from imperfect inputs.
 
 ## 2026-09-18
 

@@ -21,6 +21,17 @@ func play(kind: String) -> void:
 	player.finished.connect(player.queue_free)
 	player.play()
 
+func stop_all() -> void:
+	for child in get_children():
+		if child is AudioStreamPlayer:
+			child.stop()
+			child.stream = null
+			child.free()
+	samples.clear()
+
+func _exit_tree() -> void:
+	stop_all()
+
 func _make_sound(frequency: float, duration: float, amplitude: float, rough: bool) -> AudioStreamWAV:
 	var sample_rate := 22050
 	var data := PackedByteArray()

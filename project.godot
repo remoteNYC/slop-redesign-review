@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="Clockwork Ascent"
-run/main_scene="res://scenes/kinetic_prototype.tscn"
+config/name="Clockwork Relay"
+run/main_scene="res://scenes/game.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 

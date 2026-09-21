@@ -6,6 +6,23 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Rebuilt the game as one continuous Clockwork Relay route focused on a shared
+  momentum rule, with a safe rebound opening, kinetic shutter, persistent rail
+  carriage, opposing ram, return gantry, and bell exit.
+- Replaced the level-two lock-on target chain with a permanent free directional
+  dash that transfers motion into rams and the carriage and refreshes on
+  landing, rebound, or a successful kinetic clash.
+- Added fast state-aware checkpoints, recovery pads and work islands, exact
+  visible spike hitboxes, a more generous strike connection, and brief contact
+  grace so successful strikes and dashes cannot become delayed collision deaths.
+- Removed the disconnected Foundry and Relay Shaft level flow, health attrition,
+  cosmetic enemy variants, crushers, level selection, and prototype velocity
+  diagnostics from the playable game.
+- Made the opposing ram or far rail stop reverse the same carriage, visibly
+  deploy the exit, and let the returning carriage contribute horizontal motion
+  to the final rebound.
+- Cleaned up active procedural sound playback when leaving the game scene so
+  retries, automated runs, and scene shutdown do not retain stale audio objects.
 - Expanded the Kinetic Clockwork experiment from one room into a continuous
   three-part rail relay built around the same persistent carriage.
 - Added an opposing ram, a scrolling camera, recovery islands, and an exit

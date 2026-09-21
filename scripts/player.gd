@@ -11,6 +11,7 @@ const GROUND_ACCEL := 1250.0
 const AIR_ACCEL := 850.0
 const GROUND_FRICTION := 1450.0
 const AIR_FRICTION := 360.0
+const AIR_OVERSPEED_DRAG := 100.0
 const GRAVITY := 680.0
 const JUMP_SPEED := -240.0
 const REBOUND_SPEED := -290.0
@@ -90,7 +91,10 @@ func _physics_process(delta: float) -> void:
 
 	var direction := Input.get_axis("move_left", "move_right")
 	if absf(direction) > 0.05:
-		velocity.x = move_toward(velocity.x, direction * RUN_SPEED, (GROUND_ACCEL if is_on_floor() else AIR_ACCEL) * delta)
+		var acceleration := GROUND_ACCEL if is_on_floor() else AIR_ACCEL
+		if not is_on_floor() and absf(velocity.x) > RUN_SPEED and signf(velocity.x) == signf(direction):
+			acceleration = AIR_OVERSPEED_DRAG
+		velocity.x = move_toward(velocity.x, direction * RUN_SPEED, acceleration * delta)
 		facing = 1 if direction > 0.0 else -1
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, (GROUND_FRICTION if is_on_floor() else AIR_FRICTION) * delta)
@@ -140,7 +144,12 @@ func _update_dash(delta: float) -> void:
 	move_and_slide()
 	if _check_dash_impact():
 		return
-	if get_slide_collision_count() > 0:
+	var blocked := false
+	for index in get_slide_collision_count():
+		if get_slide_collision(index).get_normal().dot(dash_direction) < -0.5:
+			blocked = true
+			break
+	if blocked:
 		dash_time = 0.0
 		velocity *= 0.35
 	elif dash_time <= 0.0:
@@ -163,7 +172,10 @@ func _check_dash_impact() -> bool:
 		dash_time = 0.0
 		dash_ready = true
 		kinetic_contact_grace = 0.16
-		velocity = Vector2(-dash_direction.x * 72.0, -105.0)
+		if target.is_in_group("kinetic_carriage"):
+			velocity = Vector2(dash_direction.x * 260.0, -240.0)
+		else:
+			velocity = Vector2(-dash_direction.x * 72.0, -105.0)
 		jump_cut_available = false
 		dash_connected.emit(target.global_position)
 		return true

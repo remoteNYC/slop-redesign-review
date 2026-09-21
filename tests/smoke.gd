@@ -42,11 +42,14 @@ func _run() -> void:
 	_check(game.mode == "play" and game.player.global_position.distance_to(game.CHECKPOINT_ONE) < 5.0, "the shutter checkpoint restores the player on the recoverable carriage state (player %s, cart %s)" % [game.player.global_position, game.carriage.global_position])
 	_check(game.gate.is_open, "checkpoint retry preserves the solved shutter")
 
-	game.return_gate.receive_kinetic_impact(170.0)
+	game._set_checkpoint(2)
+	game.carriage_advanced = true
+	game.carriage.reset_kinetic(Vector2(2105, 166), 105.0)
+	game.carriage.receive_kinetic_impact(-170.0)
 	await physics_frame
 	game.player.kill()
 	await create_timer(0.36).timeout
-	_check(game.checkpoint_phase == 3 and game.return_gate.is_open, "the far-shutter checkpoint preserves the solved threat-to-tool interaction")
+	_check(game.checkpoint_phase == 3 and game.exit_deployed, "the reversal checkpoint preserves the solved threat-to-tool interaction")
 	_check(game.carriage.global_position.distance_to(Vector2(2194, 166)) < 35.0, "final retry restores the returning carriage beside the player (cart %s, player %s)" % [game.carriage.global_position, game.player.global_position])
 	_check(game.player.global_position.distance_to(game.CHECKPOINT_THREE) < 8.0, "final retry begins directly above the returning carriage")
 

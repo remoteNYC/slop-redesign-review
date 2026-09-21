@@ -6,6 +6,14 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Made an advanced carriage's return deploy the exit whether it is reversed by
+  the opposing ram, the far rail stop, or a deliberate player correction; the
+  separate far shutter is no longer a required trigger.
+- Fixed horizontal ground dashes ending on floor contact, made carriage dashes
+  vault the player toward a catch, and preserved earned airborne momentum long
+  enough to use it.
+- Reduced carriage drag so its return can actually reach the final rebound,
+  and made charging rams commit to the direction shown by their windup.
 - Rebuilt the game as one continuous Clockwork Relay route focused on a shared
   momentum rule, with a safe rebound opening, kinetic shutter, persistent rail
   carriage, opposing ram, return gantry, and bell exit.

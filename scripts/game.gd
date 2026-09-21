@@ -19,7 +19,6 @@ const CARRIAGE_RAIL_RIGHT := 2580.0
 const LAUNCH_RAM_START := Vector2(830, 172)
 const COUNTER_RAM_START := Vector2(2160, 172)
 const ENTRY_GATE_POSITION := Vector2(1040, 126)
-const RETURN_GATE_POSITION := Vector2(2460, 126)
 const EXIT_CENTER := Vector2(1600, 88)
 
 var player: CharacterBody2D
@@ -27,7 +26,6 @@ var launch_ram: Area2D
 var counter_ram: Area2D
 var carriage: AnimatableBody2D
 var gate: StaticBody2D
-var return_gate: StaticBody2D
 var camera: Camera2D
 var effects: Node2D
 var sfx: Node
@@ -37,7 +35,6 @@ var spike_rects: Array[Rect2] = []
 var checkpoint_phase := 0
 var carriage_advanced := false
 var exit_deployed := false
-var return_gate_was_opened := false
 var mode := "title"
 var attempts := 1
 var elapsed := 0.0
@@ -140,12 +137,6 @@ func _create_actors() -> void:
 	gate.configure(ENTRY_GATE_POSITION, 112.0, 120.0)
 	gate.opened.connect(_on_gate_opened)
 	add_child(gate)
-
-	return_gate = GateScene.new()
-	return_gate.name = "ReturnShutter"
-	return_gate.configure(RETURN_GATE_POSITION, 112.0, 120.0)
-	return_gate.opened.connect(_on_return_gate_opened)
-	add_child(return_gate)
 
 	carriage = CarriageScene.new()
 	carriage.name = "RelayCarriage"
@@ -274,14 +265,6 @@ func _on_gate_opened() -> void:
 	effects.burst(gate.global_position, Color("a2f0cf"), 16)
 	sfx.play("checkpoint")
 
-func _on_return_gate_opened() -> void:
-	return_gate_was_opened = true
-	if checkpoint_phase < 3:
-		_set_checkpoint(3)
-	_deploy_exit()
-	effects.burst(return_gate.global_position, Color("a2f0cf"), 18)
-	sfx.play("checkpoint")
-
 func _set_checkpoint(phase: int) -> void:
 	if phase <= checkpoint_phase:
 		return
@@ -296,7 +279,10 @@ func _set_checkpoint(phase: int) -> void:
 
 func _on_carriage_reversed(at: Vector2, _speed: float) -> void:
 	if carriage_advanced:
-		effects.burst(at, Color("a9f4dd"), 8)
+		if checkpoint_phase < 3:
+			_set_checkpoint(3)
+		_deploy_exit()
+		effects.burst(at, Color("a9f4dd"), 12)
 
 func _deploy_exit() -> void:
 	if exit_deployed:
@@ -363,12 +349,10 @@ func _on_goal_body(body: Node2D) -> void:
 func _reset_world() -> void:
 	reset_ticket += 1
 	exit_deployed = checkpoint_phase >= 3
-	return_gate_was_opened = checkpoint_phase >= 3
 	carriage_advanced = checkpoint_phase >= 2
 	exit_collision.set_deferred("disabled", not exit_deployed)
 	goal_area.set_deferred("monitoring", exit_deployed)
 	gate.set_open(checkpoint_phase >= 1)
-	return_gate.set_open(checkpoint_phase >= 3)
 	counter_ram.reset_kinetic(COUNTER_RAM_START)
 
 	match checkpoint_phase:
@@ -534,8 +518,9 @@ func _draw_affordances() -> void:
 		Vector2(547, 86),
 		Vector2(547, 98),
 	]), Color("a9f4dd", 0.65))
-	draw_line(Vector2(1034, 52), Vector2(EXIT_CENTER.x, 52), Color("526b75"), 2.0)
-	draw_line(Vector2(EXIT_CENTER.x, 52), Vector2(2454, 52), Color("526b75"), 2.0)
+	var relay_color := Color("a9f4dd") if exit_deployed else Color("526b75")
+	draw_line(Vector2(1034, 52), Vector2(EXIT_CENTER.x, 52), relay_color, 2.0)
+	draw_line(Vector2(EXIT_CENTER.x, 52), Vector2(CARRIAGE_RAIL_RIGHT, 52), relay_color, 2.0)
 
 func _setup_inputs() -> void:
 	_add_action("move_left", 0.2)

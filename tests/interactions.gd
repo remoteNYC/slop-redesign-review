@@ -55,15 +55,56 @@ func _run() -> void:
 	for _frame in 18:
 		await physics_frame
 	_check(game.carriage.velocity_x < -35.0, "the opposing ram reliably reverses a rightward carriage")
-	_check(not game.exit_deployed, "an accidental reversal is recoverable but does not solve the far shutter")
+	_check(game.exit_deployed and game.checkpoint_phase == 3, "the opposing ram turns danger into the return that opens the exit")
 
-	game.counter_ram.reset_kinetic(Vector2(2410, 172), "coast", 170.0)
-	game.counter_ram.contact_cooldown = 0.0
-	for _frame in 28:
+	game._start_run()
+	game.player.active = false
+	game._set_checkpoint(2)
+	game.carriage_advanced = true
+	game.carriage.reset_kinetic(Vector2(2570, 166), 105.0)
+	for _frame in 20:
 		await physics_frame
-	_check(game.return_gate.is_open, "redirecting the opposing ram opens the far shutter")
-	_check(game.exit_deployed and game.checkpoint_phase == 3, "the useful ram impact deploys the return exit and records the learned state")
+	_check(game.carriage.velocity_x < -35.0, "the far rail stop also returns the carriage")
+	_check(game.exit_deployed and game.checkpoint_phase == 3, "the far rail return opens the same exit and checkpoint")
 
+	game._start_run()
+	game.player.active = false
+	game.gate.set_open(true)
+	game.carriage.reset_kinetic(Vector2(1210, 166), -55.0)
+	game.launch_ram.reset_kinetic(Vector2(1150, 172), "coast", 170.0)
+	for _frame in 15:
+		await physics_frame
+	_check(game.carriage.velocity_x > 60.0, "the returning carriage can be rescued by the original launch ram")
+
+	game._start_run()
+	game.launch_ram.reset_kinetic(Vector2(830, 172), "idle", 0.0)
+	game.launch_ram.cooldown = 0.0
+	game.player.reset_at(Vector2(790, 173))
+	for _frame in 3:
+		await physics_frame
+	_check(game.launch_ram.state == "windup" and game.launch_ram.facing == -1, "the ram shows its chosen charge direction")
+	game.player.reset_at(Vector2(870, 173))
+	for _frame in 10:
+		await physics_frame
+	_check(game.launch_ram.facing == -1, "crossing behind a winding ram does not make it turn at the last moment")
+
+	game._start_run()
+	game.player.reset_at(Vector2(472, 160))
+	for _frame in 32:
+		await physics_frame
+	_check(game.mode == "play" and game.player.is_on_floor() and game.player.global_position.y > 190.0, "a missed upper dash lands in the recovery pocket")
+	var pocket_rebounds := rebounds
+	Input.action_press("jump")
+	for _frame in 8:
+		await physics_frame
+	Input.action_release("jump")
+	Input.action_press("attack")
+	for _frame in 8:
+		await physics_frame
+	Input.action_release("attack")
+	_check(rebounds > pocket_rebounds and game.player.velocity.y < -180.0, "the recovery pad launches the player out of the pocket")
+
+	game._start_run()
 	game.mode = "play"
 	game.player.reset_at(Vector2(1400, 172))
 	await physics_frame
@@ -84,7 +125,7 @@ func _run() -> void:
 	game.free()
 	await process_frame
 	if failures.is_empty():
-		print("INTERACTIONS PASS: rebound, dash transfer, shutter cascade, counter reversal, exact spikes, and contact grace")
+		print("INTERACTIONS PASS: rebound, dash transfer, shutter cascade, two returns, ram rescue, baitable windup, and exact spikes")
 		quit(0)
 	else:
 		for failure in failures:

@@ -66,13 +66,13 @@ func _physics_process(delta: float) -> void:
 			velocity_x = move_toward(velocity_x, 0.0, IDLE_FRICTION * delta)
 			cooldown = maxf(0.0, cooldown - delta)
 			if player != null and cooldown <= 0.0 and absf(player.global_position.x - global_position.x) <= trigger_range and absf(player.global_position.y - global_position.y) < 72.0:
+				if not is_zero_approx(player.global_position.x - global_position.x):
+					facing = 1 if player.global_position.x > global_position.x else -1
 				state = "windup"
 				state_time = WINDUP_TIME
 		"windup":
 			velocity_x = move_toward(velocity_x, 0.0, IDLE_FRICTION * delta)
 			state_time = maxf(0.0, state_time - delta)
-			if player != null and not is_zero_approx(player.global_position.x - global_position.x):
-				facing = 1 if player.global_position.x > global_position.x else -1
 			if state_time <= 0.0:
 				velocity_x = facing * CHARGE_SPEED
 				state = "coast"

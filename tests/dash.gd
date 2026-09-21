@@ -77,6 +77,26 @@ func _run() -> void:
 	_release_all()
 	arena.free()
 	await process_frame
+	var game := (load("res://scenes/game.tscn") as PackedScene).instantiate()
+	root.add_child(game)
+	await process_frame
+	game._start_run()
+	game.gate.set_open(true)
+	game.carriage.reset_kinetic(Vector2(1175, 166), 0.0)
+	game.player.reset_at(Vector2(1112, 173))
+	await physics_frame
+	Input.action_press("move_right")
+	Input.action_press("dash")
+	for _frame in 12:
+		await physics_frame
+	Input.action_release("dash")
+	Input.action_release("move_right")
+	_check(game.carriage.velocity_x > 120.0, "a grounded dash can relaunch the checkpoint carriage")
+	game.mode = "complete"
+	game.player.active = false
+	game.sfx.stop_all()
+	game.free()
+	await process_frame
 	if failures.is_empty():
 		print("DASH PASS: free direction, distance, landing refresh, and kinetic transfer")
 		quit(0)

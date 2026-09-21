@@ -21,7 +21,7 @@ var rail_left := 0.0
 var rail_right := 0.0
 var velocity_x := 0.0
 var spawn_position := Vector2.ZERO
-var kinetic_friction := 7.0
+var kinetic_friction := 3.0
 var flash := 0.0
 var reset_generation := 0
 
@@ -69,7 +69,7 @@ func receive_kinetic_impact(ram_velocity: float) -> float:
 	velocity_x = clampf(previous_velocity * RETENTION_ON_RAM_HIT + ram_velocity * RAM_TRANSFER, -MAX_SPEED, MAX_SPEED)
 	flash = 0.16
 	ram_impact.emit(ram_velocity, velocity_x)
-	if previous_velocity > 20.0 and velocity_x < -20.0:
+	if previous_velocity > -20.0 and velocity_x < -20.0:
 		direction_reversed.emit(global_position, velocity_x)
 	return clampf(-ram_velocity * RAM_REBOUND + previous_velocity * 0.12, -MAX_SPEED, MAX_SPEED)
 
@@ -78,7 +78,7 @@ func receive_kinetic_strike(player_velocity_x: float) -> bool:
 	velocity_x = clampf(velocity_x * STRIKE_RETENTION + player_velocity_x * STRIKE_TRANSFER, -MAX_SPEED, MAX_SPEED)
 	flash = 0.14
 	directly_struck.emit(player_velocity_x, velocity_x)
-	if previous_velocity > 20.0 and velocity_x < -20.0:
+	if previous_velocity > -20.0 and velocity_x < -20.0:
 		direction_reversed.emit(global_position, velocity_x)
 	return true
 
@@ -87,7 +87,7 @@ func receive_kinetic_dash(player_velocity_x: float) -> bool:
 	velocity_x = clampf(velocity_x * DASH_RETENTION + player_velocity_x * DASH_TRANSFER, -MAX_SPEED, MAX_SPEED)
 	flash = 0.18
 	directly_dashed.emit(player_velocity_x, velocity_x)
-	if previous_velocity > 20.0 and velocity_x < -20.0:
+	if previous_velocity > -20.0 and velocity_x < -20.0:
 		direction_reversed.emit(global_position, velocity_x)
 	return true
 

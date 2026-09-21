@@ -26,10 +26,11 @@ func _run() -> void:
 		return
 
 	game.carriage_advanced = true
+	game.checkpoint_phase = 3
 	game._deploy_exit()
-	game.carriage.position = Vector2(1175, 166)
+	game.carriage.position = Vector2(1640, 166)
 	game.carriage.velocity_x = -90.0
-	game.player.reset_at(Vector2(1175, 141))
+	game.player.reset_at(Vector2(1640, 141))
 	game.camera.reset_smoothing()
 	await create_timer(0.12).timeout
 	if not _save("/tmp/clockwork_return.png"):

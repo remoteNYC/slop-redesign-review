@@ -16,8 +16,6 @@ var carriage_relaunch_delay := 0
 var carriage_relaunch_stage := 0
 var observed_attempts := 1
 var air_catch_delay := 0
-var final_retry_delay := 0
-var final_retry_done := false
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -29,7 +27,7 @@ func _run() -> void:
 	game._start_run()
 	game.player.rebounded.connect(func(_at: Vector2) -> void: rebound_count += 1)
 	game.player.dash_connected.connect(func(_at: Vector2) -> void: dash_hit_count += 1)
-	game.player.dashed.connect(func(at: Vector2) -> void: print("ROUTE DASH START ", at))
+	game.player.dashed.connect(func(at: Vector2) -> void: print("ROUTE DASH START ", at, " direction=", game.player.dash_direction))
 	game.carriage.ram_impact.connect(func(ram_speed: float, cart_speed: float) -> void: print("ROUTE IMPACT ram=", ram_speed, " cart=", cart_speed))
 	game.carriage.directly_dashed.connect(func(player_speed: float, cart_speed: float) -> void: print("ROUTE CART DASH player=", player_speed, " cart=", cart_speed))
 
@@ -88,25 +86,23 @@ func _run() -> void:
 		elif game.checkpoint_phase == 1:
 			exit_bounce_started = false
 			var cart_dx: float = cart.global_position.x - p.global_position.x
-			var launch_incoming := game.launch_ram.velocity_x > 30.0 and game.launch_ram.global_position.x < cart.global_position.x - 42.0
+			var launch_incoming: bool = game.launch_ram.velocity_x > 30.0 and game.launch_ram.global_position.x < cart.global_position.x - 42.0
 			if absf(cart.velocity_x) < 20.0 and launch_incoming:
 				_align(p.global_position.x, 1085.0)
 			elif absf(cart.velocity_x) < 20.0:
-				if carriage_relaunch_stage == 0 and cart_dx < 50.0:
-					_hold_left()
-				elif carriage_relaunch_stage == 0:
-					carriage_relaunch_stage = 1
-					Input.action_release("move_left")
-					Input.action_release("move_right")
-				elif carriage_relaunch_stage == 1:
-					carriage_relaunch_delay += 1
-					Input.action_release("move_left")
-					Input.action_release("move_right")
-					if carriage_relaunch_delay == 3:
-						carriage_relaunch_stage = 2
+				if carriage_relaunch_stage == 1:
 					_hold_right()
-					if p.dash_ready:
+					carriage_relaunch_delay += 1
+					if carriage_relaunch_delay > 14:
+						carriage_relaunch_stage = 0
+						carriage_relaunch_delay = 0
+				elif p.global_position.x > cart.global_position.x - 63.0:
+					_hold_left()
+				else:
+					_hold_right()
+					if p.dash_ready and p.is_on_floor():
 						_tap("dash")
+						carriage_relaunch_stage = 1
 			elif riding:
 				_align(p.global_position.x, cart.global_position.x)
 			else:
@@ -136,14 +132,7 @@ func _run() -> void:
 			else:
 				_align(p.global_position.x, 2130.0)
 		else:
-			if not final_retry_done:
-				Input.action_release("move_left")
-				Input.action_release("move_right")
-				final_retry_delay += 1
-				if final_retry_delay == 5:
-					_tap("restart")
-					final_retry_done = true
-			elif riding and not exit_bounce_started and cart.velocity_x < -20.0 and cart.global_position.x <= 1690.0:
+			if riding and not exit_bounce_started and cart.velocity_x < -20.0 and cart.global_position.x <= 1690.0:
 				exit_bounce_started = true
 				exit_bounce_rebounds = rebound_count
 				_hold_left()
@@ -174,7 +163,7 @@ func _run() -> void:
 	_check(dash_hit_count >= 1, "the learned dash can redirect the launch ram")
 	_check(saw_gate, "the redirected ram opens the shutter")
 	_check(rode_carriage, "the launched carriage can be caught and ridden")
-	_check(saw_return, "redirecting the opposing ram opens the far shutter and deploys the exit")
+	_check(saw_return, "carriage reversal deploys the exit")
 	_check(game.mode == "complete", "the input-only route reaches the exit (mode %s, phase %d, player %s, cart %.1f/%+.1f, rebounds %d)" % [
 		game.mode,
 		game.checkpoint_phase,

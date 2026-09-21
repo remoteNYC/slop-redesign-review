@@ -6,6 +6,8 @@ The same charging ram that kills on contact can be redirected into a shutter,
 the shutter releases a rail carriage, and a later opposing ram can reverse that
 carriage into the route to the exit. Redirecting the second ram lets the
 carriage reach the far rail stop for a different, equally useful return.
+Rebounding from the carriage also reaches an optional upper path: cross above
+the opposing ram, drop behind it, and redirect its charge into the carriage.
 
 The game uses a small permanent move set. Downward strikes rebound at a fixed
 height and transfer horizontal momentum into rams and the carriage. The free
@@ -13,6 +15,8 @@ directional dash also transfers momentum on contact and refreshes after a
 successful kinetic clash, a rebound, or landing. Dashing into the carriage
 vaults the player toward it, and moving carriage rebounds carry their
 horizontal motion into the player's next rebound.
+The short dash guide marks a nearby kinetic target when the current aim can hit
+it; the dash still travels exactly in the chosen direction.
 
 Failures restart in about a quarter-second. Checkpoints preserve understood
 machine state: after opening the shutter, retry begins beside a recoverable
@@ -45,6 +49,7 @@ godot --headless --path . --script res://tests/dash.gd
 godot --headless --path . --script res://tests/kinetic.gd
 godot --headless --path . --script res://tests/interactions.gd
 godot --headless --path . --script res://tests/alternate.gd
+godot --headless --path . --script res://tests/high_route.gd
 godot --headless --path . --script res://tests/route.gd
 ~~~
 

@@ -47,6 +47,7 @@ func _run() -> void:
 	_check(game.gate.is_open, "the charging ram opens the shutter through the shared impact rule")
 	_check(game.carriage.velocity_x > 70.0, "the same ram continues through the shutter and launches the carriage")
 
+	game._set_checkpoint(2)
 	game.carriage.reset_kinetic(Vector2(2105, 166), 105.0)
 	game.carriage_advanced = true
 	game.counter_ram.reset_kinetic(Vector2(2160, 172), "coast", -170.0)

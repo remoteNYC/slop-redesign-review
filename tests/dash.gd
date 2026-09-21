@@ -52,6 +52,12 @@ func _run() -> void:
 	arena.add_child(ram)
 	player.reset_at(Vector2(230, 160))
 	await physics_frame
+	await physics_frame
+	_check(player.dash_preview_target == ram, "the free dash cues a ram that lies in its actual travel path")
+	Input.action_press("aim_up")
+	await physics_frame
+	_check(player.dash_preview_target == null, "the dash cue clears when aim turns away from the ram")
+	Input.action_release("aim_up")
 	Input.action_press("move_right")
 	Input.action_press("dash")
 	for _frame in 12:
@@ -66,6 +72,8 @@ func _run() -> void:
 	arena.add_child(carriage)
 	player.reset_at(Vector2(362, 160))
 	await physics_frame
+	await physics_frame
+	_check(player.dash_preview_target == carriage, "the same aim cue recognizes the carriage as a kinetic target")
 	Input.action_press("move_right")
 	Input.action_press("dash")
 	for _frame in 5:

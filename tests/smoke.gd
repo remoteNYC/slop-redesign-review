@@ -42,6 +42,16 @@ func _run() -> void:
 	_check(game.mode == "play" and game.player.global_position.distance_to(game.CHECKPOINT_ONE) < 5.0, "the shutter checkpoint restores the player on the recoverable carriage state (player %s, cart %s)" % [game.player.global_position, game.carriage.global_position])
 	_check(game.gate.is_open, "checkpoint retry preserves the solved shutter")
 
+	game.carriage_advanced = true
+	game.carriage.reset_kinetic(Vector2(2570, 166), 105.0)
+	for _frame in 20:
+		await physics_frame
+	_check(game.exit_deployed and game.checkpoint_phase == 1, "a distant rail return opens the exit without awarding a skipped checkpoint")
+	game.player.kill()
+	await create_timer(0.36).timeout
+	_check(game.checkpoint_phase == 1 and game.player.global_position.distance_to(game.CHECKPOINT_ONE) < 5.0, "retry after a distant return resumes at the shutter")
+	_check(not game.exit_deployed, "retry restores the local unsolved carriage state")
+
 	game._set_checkpoint(2)
 	game.carriage_advanced = true
 	game.carriage.reset_kinetic(Vector2(2105, 166), 105.0)
@@ -55,6 +65,8 @@ func _run() -> void:
 
 	game._deploy_exit()
 	await physics_frame
+	game._on_goal_body(game.player)
+	_check(game.mode == "play", "a stale bell entry cannot finish the run while the player is outside its area")
 	game.player.global_position = Vector2(game.EXIT_CENTER.x, 62)
 	game.player.velocity = Vector2.ZERO
 	await physics_frame

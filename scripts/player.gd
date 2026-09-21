@@ -35,6 +35,8 @@ var dash_ready := true
 var dash_time := 0.0
 var dash_direction := Vector2.RIGHT
 var dash_aim_direction := Vector2.ZERO
+var dash_preview_target: Node2D
+var dash_preview_point := Vector2.ZERO
 var kinetic_contact_grace := 0.0
 
 var strike_shape := RectangleShape2D.new()
@@ -78,6 +80,7 @@ func _physics_process(delta: float) -> void:
 		strike_buffer_time = STRIKE_BUFFER
 
 	dash_aim_direction = Input.get_vector("move_left", "move_right", "aim_up", "aim_down")
+	_update_dash_preview()
 	if dash_enabled and dash_ready and Input.is_action_just_pressed("dash"):
 		var requested_direction := dash_aim_direction.normalized()
 		if requested_direction.is_zero_approx():
@@ -125,6 +128,7 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 func _begin_dash(direction: Vector2) -> void:
+	dash_preview_target = null
 	dash_direction = direction
 	dash_time = DASH_DURATION
 	dash_ready = false
@@ -181,6 +185,25 @@ func _check_dash_impact() -> bool:
 		return true
 	return false
 
+func _update_dash_preview() -> void:
+	dash_preview_target = null
+	if not dash_enabled or not dash_ready or dash_time > 0.0:
+		return
+	var direction := dash_aim_direction.normalized()
+	if direction.is_zero_approx():
+		direction = Vector2(facing, 0.0)
+	var ray := PhysicsRayQueryParameters2D.create(global_position, global_position + direction * (DASH_SPEED * DASH_DURATION + 9.0))
+	ray.collision_mask = 17
+	ray.collide_with_areas = true
+	ray.exclude = [get_rid()]
+	var hit := get_world_2d().direct_space_state.intersect_ray(ray)
+	if hit.is_empty():
+		return
+	var target := hit["collider"] as Node2D
+	if target != null and target.has_method("receive_kinetic_dash"):
+		dash_preview_target = target
+		dash_preview_point = hit["position"]
+
 func _check_strike() -> void:
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = strike_shape
@@ -229,6 +252,7 @@ func reset_at(at: Vector2) -> void:
 	dash_ready = dash_enabled
 	dash_direction = Vector2.RIGHT
 	dash_aim_direction = Vector2.ZERO
+	dash_preview_target = null
 	coyote_time = 0.0
 	jump_buffer_time = 0.0
 	strike_buffer_time = 0.0
@@ -268,3 +292,12 @@ func _draw() -> void:
 		draw_circle(-dash_direction * 12.0, 2.0, Color("fff1ac"))
 	elif dash_ready:
 		draw_rect(Rect2(-2, -13, 4, 2), Color("a9f4dd"))
+		var guide := dash_aim_direction.normalized()
+		if guide.is_zero_approx():
+			guide = Vector2(facing, 0.0)
+		var target_visible := is_instance_valid(dash_preview_target)
+		var guide_color := Color("a9f4dd") if target_visible else Color("657b7d")
+		draw_line(guide * 8.0, guide * 28.0, guide_color, 1.0)
+		if target_visible:
+			var mark := to_local(dash_preview_point)
+			draw_arc(mark, 5.0, 0.0, TAU, 12, Color("a9f4dd"), 1.0)

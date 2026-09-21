@@ -6,6 +6,14 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Restored a short directional dash guide and kinetic target cue from the old
+  aimed-dash experiment, adapted to the free dash without homing or target order.
+- Added an optional upper approach above the opposing ram, reached by rebounding
+  from the carriage, with a safe drop behind it and room to redirect its charge
+  back into the carriage.
+- Prevented a carriage returning offscreen from awarding a later checkpoint to
+  a player who stayed behind, and rejected stale bell-contact signals after a
+  retry so they cannot complete a run from outside the goal.
 - Made an advanced carriage's return deploy the exit whether it is reversed by
   the opposing ram, the far rail stop, or a deliberate player correction; the
   separate far shutter is no longer a required trigger.

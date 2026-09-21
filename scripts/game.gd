@@ -119,14 +119,15 @@ func _build_level() -> void:
 	_add_block(Rect2(700, 182, 340, 34))
 	_add_block(Rect2(1054, 182, 306, 34))
 	_add_block(Rect2(1840, 182, 112, 34))
-	_add_block(Rect2(2070, 182, 180, 34))
+	_add_block(Rect2(2070, 182, 230, 34))
+	_add_block(Rect2(1940, 100, 288, 10), true)
 	_add_block(Rect2(2474, 182, 246, 34))
 	_add_block(Rect2(-16, 0, 16, 216))
 	_add_block(Rect2(WORLD_WIDTH, 0, 16, 216))
 	_add_spikes(Rect2(1040, 182, 14, 34))
 	_add_spikes(Rect2(1360, 182, 480, 34))
 	_add_spikes(Rect2(1952, 182, 118, 34))
-	_add_spikes(Rect2(2250, 182, 224, 34))
+	_add_spikes(Rect2(2300, 182, 174, 34))
 	_add_device(Vector2(220, 174))
 	_add_device(Vector2(472, 185))
 	_create_exit()
@@ -279,7 +280,7 @@ func _set_checkpoint(phase: int) -> void:
 
 func _on_carriage_reversed(at: Vector2, _speed: float) -> void:
 	if carriage_advanced:
-		if checkpoint_phase < 3:
+		if checkpoint_phase >= 2 and checkpoint_phase < 3:
 			_set_checkpoint(3)
 		_deploy_exit()
 		effects.burst(at, Color("a9f4dd"), 12)
@@ -337,7 +338,11 @@ func _on_player_died() -> void:
 		_reset_world()
 
 func _on_goal_body(body: Node2D) -> void:
-	if mode != "play" or not body.is_in_group("player"):
+	if mode != "play" or not exit_deployed or not body.is_in_group("player"):
+		return
+	var goal_bounds := Rect2(goal_area.global_position - Vector2(17, 20), Vector2(34, 40))
+	var player_bounds := Rect2(body.global_position - Vector2(6, 9), Vector2(12, 18))
+	if not goal_bounds.intersects(player_bounds):
 		return
 	mode = "complete"
 	player.active = false

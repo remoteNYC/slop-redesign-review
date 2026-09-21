@@ -18,6 +18,7 @@ The redesign classified the major work as follows:
 | Keep | responsive acceleration, coyote time, jump buffering, fixed rebound, quick retry, clockwork presentation, persistent ram/carriage impacts |
 | Keep but simplify | kinetic transfer bands, camera, recovery islands, checkpoint state |
 | Redesign | lock-on dash into a free directional kinetic dash; debug rail into one continuous learning arc; return into a mechanically required exit deployment; carriage clash into a catchable vault |
+| Reuse selectively | the old aimed-dash target cue as free-dash feedback; Wind Effigy's optional upper route as a carriage-rebound flank above the opposing ram |
 | Remove | health attrition, cosmetic enemy variants, relay target chains, isolated crushers, level select, numeric diagnostics, far shutter |
 
 The target dash was removed because it reduced play to target 1 → target 2 →
@@ -39,6 +40,9 @@ landing, and rebound refreshes.
   it sends the player up and along its motion for a deliberate catch.
 - Returning an advanced carriage deploys the exit. The opposing ram, far rail
   stop, or a strong player correction can create that return.
+- The carriage rebound can reach an optional one-way upper deck. Crossing above
+  the opposing ram and dropping behind it lets the player bait its charge and
+  dash it back into the carriage; the lower landing gives room to recover.
 
 ## Successful player sequence
 
@@ -75,6 +79,8 @@ playtest.
   recoverable trajectory.
 - The opposing ram's red windup locks to a direction, so crossing behind it
   produces a predictable miss instead of a last-frame turn.
+- The free dash shows a short directional guide and marks a kinetic target only
+  when it lies in the dash's immediate unobstructed path; it never steers the dash.
 - The folded gantry visibly deploys at reversal, linking the changed carriage
   state to the new route.
 - Spike collision matches the drawn tips; there is no invisible lethal margin.

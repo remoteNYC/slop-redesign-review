@@ -4,13 +4,14 @@
 
 The earliest Clockwork Tower brief favored a connected movement stage, rebound
 combat, and varied hazards. Its later target-dash chains added skillful aiming
-but made enemies disposable steps in a prescribed sequence. The gray-box
-kinetic experiment found a stronger relationship: a threatening ram can launch,
-reverse, or rescue the same carriage. Wind Effigy's earlier notes also argued
-for momentum that remains legible after a player releases control, and for a
-human playtest before claiming that a reachable route is fun. This design keeps
-those principles without restoring the tether, health attrition, crushers, or
-extra levels.
+but made enemies disposable steps in a prescribed sequence. Their directional
+target cue survives as feedback for the current free dash, without homing. The
+gray-box kinetic experiment found a stronger relationship: a threatening ram
+can launch, reverse, or rescue the same carriage. Wind Effigy's earlier notes
+also argued for momentum that remains legible after a player releases control,
+optional upper approaches with safe recovery below, and a human playtest before claiming
+that a reachable route is fun. This design keeps those principles without
+restoring the tether, health attrition, isolated crushers, or extra levels.
 
 ## Core verbs and rules
 
@@ -54,6 +55,9 @@ deliberate tool.
    to a visible direction, so the player can bait its timing or redirect it
    away from the carriage. Redirecting it lets the carriage reach its rail stop
    instead; both shared-rule outcomes create a return.
+   An optional upper deck reached by rebounding from the carriage lets the
+   player cross above the ram, drop behind it, and dash it back into the
+   carriage. This reuses the learned rebound and kinetic transfer rules.
 6. The reversal deploys the exit gantry. A downward strike on the returning
    carriage inherits its motion and reaches the bell.
 
@@ -69,6 +73,8 @@ deliberate tool.
   state rather than a broken or already-lost timing state.
 - No mandatory jump depends on a frame-perfect edge input. The complete route
   is exercised by an input-only automated playthrough.
+- The optional upper approach has a safe landing behind the ram and works with
+  several jump-to-strike and counter-dash timings.
 
 ## Scope
 
